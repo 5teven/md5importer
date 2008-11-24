@@ -58,7 +58,7 @@ public class AnimationSelectorGUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     public void initComponents() {
-    	
+    	this.setResizable(false);
     	this.mouseAdapter = new MD5MouseAdapter();
         jScrollPane1 = new JScrollPane();
         lstAnimations = new JList();
