@@ -4,7 +4,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.UIManager;
+
 import com.md5.viewer.player.AnimationPlayer;
+import com.md5.viewer.selector.gui.AnimationSelectorGUI;
 
 /**
  * <code>AnimationSelector</code> defines the concrete implementation of a
@@ -30,12 +33,16 @@ public class AnimationSelector {
 	 * The flag indicates if the playback mode should be manual.
 	 */
 	private boolean manual;
-	
+	/**
+	 * The GUI.
+	 */
+	private final AnimationSelectorGUI gui; 
 	/**
 	 * Constructor of <code>AnimationSelector</code>.
 	 */
 	public AnimationSelector() {
 		this.urls = new ArrayList<URL>();
+		this.gui = new AnimationSelectorGUI();
 	}
 
 	/**
@@ -43,13 +50,14 @@ public class AnimationSelector {
 	 */
 	public void initialize() {
 		this.loader = new HierarchyLoader();
+		this.gui.initComponents();
 	}
 	
 	/**
 	 * Display the GUI.
 	 */
 	public void display() {
-		
+		this.gui.setVisible(true);
 	}
 	
 	// This method should be placed into the button handler.
