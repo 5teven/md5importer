@@ -28,7 +28,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:42 EST
- * @version Modified date: 11-24-2008 14:43 EST
+ * @version Modified date: 11-24-2008 14:56 EST
  */
 public class AnimationSelectorGUI extends JFrame {
     /**
@@ -217,6 +217,22 @@ public class AnimationSelectorGUI extends JFrame {
     }
     
     /**
+	 * Add the given animation text to the chain list.
+	 * @param text The <code>String</code> animation file text.
+	 */
+	public void addAnimation(String text) {
+		this.listModel.addElement(text);
+	}
+
+	/**
+	 * Remove the given animation text from the chain list.
+	 * @param text The <code>String</code> animation file text.
+	 */
+	public void removeAnimation(String text) {
+		this.listModel.removeElement(text);
+	}
+
+	/**
      * Set the text for the hierarchy.
      * @param text The <code>String</code> text.
      */
@@ -233,10 +249,10 @@ public class AnimationSelectorGUI extends JFrame {
     }
     
     /**
-     * Add the given animation text to the list.
-     * @param text The <code>String</code> animation file text.
+     * Get the selected animation file name.
+     * @return The selected <code>String</code> file name.
      */
-    public void addAnimation(String text) {
-    	this.listModel.addElement(text);
+    public String getSelectedAnim() {
+    	return (String)this.listModel.get(this.lstAnimations.getSelectedIndex());
     }
 }

@@ -2,12 +2,12 @@ package com.md5.viewer.selector;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import com.md5.viewer.player.AnimationPlayer;
 import com.md5.viewer.selector.gui.AnimationSelectorGUI;
 import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
 
@@ -20,7 +20,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:09 EST
- * @version Modified date: 11-24-2008 14:46 EST
+ * @version Modified date: 11-24-2008 14:54 EST
  */
 public class AnimationSelector {
 	/**
@@ -44,9 +44,10 @@ public class AnimationSelector {
 	 */
 	private URL baseAnimURL;
 	/**
-	 * The <code>List</code> of <code>URL</code> link to the animations.
+	 * The <code>Map</code> of <code>String</code> file name and file
+	 * <code>URL</code> link to the animations.
 	 */
-	private List<URL> animsURL;
+	private Map<String, URL> animsURL;
 	/**
 	 * The flag indicates if the playback mode is manual.
 	 */
@@ -56,7 +57,7 @@ public class AnimationSelector {
 	 * Constructor of <code>AnimationSelector</code>.
 	 */
 	public AnimationSelector() {
-		this.animsURL = new ArrayList<URL>();
+		this.animsURL = new HashMap<String, URL>();
 	}
 
 	/**
@@ -81,12 +82,22 @@ public class AnimationSelector {
 	 */
 	public void addAnimation(URL url) {
 		if(url == null) return;
-		if(this.animsURL.contains(url)) {
+		String name = this.getFileName(url);
+		if(this.animsURL.containsKey(name)) {
 			JOptionPane.showMessageDialog(null, "Selected animation is already added.");
 			return;
 		}
-		this.animsURL.add(url);
-		this.gui.addAnimation(this.getFileName(url));
+		this.animsURL.put(name, url);
+		this.gui.addAnimation(name);
+	}
+	
+	/**
+	 * Remove the animation file with given file name.
+	 * @param fileName The <code>String</code> file name.
+	 */
+	public void removeAnimation(String fileName) {
+		this.animsURL.remove(fileName);
+		this.gui.removeAnimation(fileName);
 	}
 	
 	/**
@@ -115,6 +126,14 @@ public class AnimationSelector {
 	}
 	
 	/**
+	 * Retrieve the selector GUI.
+	 * @return The <code>AnimationSelectorGUI</code> instance.
+	 */
+	public AnimationSelectorGUI getGUI() {
+		return this.gui;
+	}
+	
+	/**
 	 * Retrieve the name of the file linked by given URL.
 	 * @param url The <code>URL</code> that links to the file.
 	 * @return The <code>String</code> file name.
@@ -122,17 +141,5 @@ public class AnimationSelector {
 	private String getFileName(URL url) {
 		String file = url.getFile();
 		return file.substring(file.lastIndexOf("/")+1, file.length());
-	}
-	
-	// This method should be placed into the button handler.
-	public void startPlayer() {
-		// TODO Load actual hierarchy from file.
-		try {
-			AnimationPlayer player = new AnimationPlayer(null, this.loader.load(null), null, this.animsURL, this.manual);
-			player.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

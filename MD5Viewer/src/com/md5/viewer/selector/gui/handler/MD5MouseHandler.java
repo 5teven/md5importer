@@ -20,7 +20,7 @@ import com.md5.viewer.selector.gui.enumn.EButton;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:52 EST
- * @version Modified date: 11-24-2008 14:38 EST
+ * @version Modified date: 11-24-2008 14:56 EST
  */
 public class MD5MouseHandler extends MouseAdapter {
 	/**
@@ -61,7 +61,9 @@ public class MD5MouseHandler extends MouseAdapter {
 			case AddAnimation:
 				this.seletor.addAnimation(this.selectFile("Select an animation file to add", "md5anim"));
 				break;
-			case RemoveAnimation: break;
+			case RemoveAnimation:
+				this.seletor.removeAnimation(this.seletor.getGUI().getSelectedAnim());
+				break;
 			case OK: break;
 			case Cancel: break;
 			}
@@ -85,7 +87,7 @@ public class MD5MouseHandler extends MouseAdapter {
 		if(file != null) return this.chooser.getSelectedFile().toURI().toURL();
 		else return null;
 	}
-
+	
 	/**
 	 * <code>MD5FileFilter</code> defines the concrete implementation of a
 	 * file filter that allows dynamic filter extension modification.
