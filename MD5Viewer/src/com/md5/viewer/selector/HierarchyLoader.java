@@ -13,7 +13,7 @@ import java.util.Scanner;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:19 EST
- * @version Modified date: 11-24-2008 10:23 EST
+ * @version Modified date: 11-24-2008 14:14 EST
  */
 public class HierarchyLoader {
 	/**
@@ -36,7 +36,7 @@ public class HierarchyLoader {
 		ArrayList<String> list = new ArrayList<String>();
 		Scanner scanner = new Scanner(file.openStream());
 		while(scanner.hasNextLine()) {
-			list.add(scanner.nextLine());
+			list.add(scanner.nextLine().trim());
 		}
 		String raw = file.getPath().replaceAll("%20", " ");
 		this.dir = raw.substring(0, raw.lastIndexOf("/") + 1);

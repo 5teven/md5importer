@@ -35,6 +35,10 @@ public class AnimationSelectorGUI extends JFrame {
 	 */
 	private static final long serialVersionUID = -4933057493044539956L;
 	/**
+	 * The <code>MD5MouseHandler</code> instance.
+	 */
+	private final MD5MouseHandler handler;
+	/**
 	 * Various {@link Swing} widgets.
 	 */
     private JButton btnAdd;
@@ -50,7 +54,6 @@ public class AnimationSelectorGUI extends JFrame {
     private JList lstAnimations;
     private JTextField txtBaseAnimation;
     private JTextField txtHierarchyFile;
-    private MD5MouseHandler mouseAdapter;
     /**
      * The <code>AnimationList</code> instance.
      */
@@ -58,8 +61,10 @@ public class AnimationSelectorGUI extends JFrame {
     
     /**
      * Constructor of <code>AnimationSelectorGUI</code>.
+     * @param handler The <code>MD5MouseHandler</code> instance.
      */
-    public AnimationSelectorGUI() {
+    public AnimationSelectorGUI(MD5MouseHandler handler) {
+    	this.handler = handler;
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException ex) {
@@ -79,7 +84,6 @@ public class AnimationSelectorGUI extends JFrame {
     public void initComponents() {
     	this.list = new AnimationList();
     	this.setResizable(false);
-    	this.mouseAdapter = new MD5MouseHandler();
         jScrollPane1 = new JScrollPane();
         lstAnimations = new JList();
         lblBodyHierarchy = new JLabel();
@@ -109,7 +113,7 @@ public class AnimationSelectorGUI extends JFrame {
         btnHierarchyLoad.setText(EButton.SelectHierarchy.getText());
         btnHierarchyLoad.setToolTipText("Select a Model Hierarchy File");
         btnHierarchyLoad.setName(EButton.SelectHierarchy.name());
-        btnHierarchyLoad.addMouseListener(this.mouseAdapter);
+        btnHierarchyLoad.addMouseListener(this.handler);
 
         lblBaseAnimation.setText("Base Animation");
 
@@ -119,29 +123,29 @@ public class AnimationSelectorGUI extends JFrame {
         btnBaseAnimLoad.setText(EButton.SelectBaseAnimation.getText());
         btnBaseAnimLoad.setToolTipText("Select a base animation file");
         btnBaseAnimLoad.setName(EButton.SelectBaseAnimation.name());
-        btnBaseAnimLoad.addMouseListener(this.mouseAdapter);
+        btnBaseAnimLoad.addMouseListener(this.handler);
 
         btnAdd.setText(EButton.AddAnimation.getText());
         btnAdd.setToolTipText("Add an animation for playback");
         btnAdd.setName(EButton.AddAnimation.name());
-        btnAdd.addMouseListener(this.mouseAdapter);
+        btnAdd.addMouseListener(this.handler);
 
         lblAnimations.setText("Animations");
 
         btnRemove.setText(EButton.RemoveAnimation.getText());
         btnRemove.setToolTipText("Remove the selected animation");
         btnRemove.setName(EButton.RemoveAnimation.name());
-        btnRemove.addMouseListener(this.mouseAdapter);
+        btnRemove.addMouseListener(this.handler);
 
         btnOK.setText(EButton.OK.getText());
         btnOK.setToolTipText("Enter the MD5 Viewer");
         btnOK.setName(EButton.OK.name());
-        btnOK.addMouseListener(this.mouseAdapter);
+        btnOK.addMouseListener(this.handler);
 
         btnCancel.setText(EButton.Cancel.getText());
         btnCancel.setToolTipText("Exit the application");
         btnCancel.setName(EButton.Cancel.name());
-        btnCancel.addMouseListener(this.mouseAdapter);
+        btnCancel.addMouseListener(this.handler);
 
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
