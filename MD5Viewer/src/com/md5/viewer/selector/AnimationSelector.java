@@ -1,5 +1,6 @@
 package com.md5.viewer.selector;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,12 @@ public class AnimationSelector {
 	// This method should be placed into the button handler.
 	public void startPlayer() {
 		// TODO Load actual hierarchy from file.
-		AnimationPlayer player = new AnimationPlayer(null, this.loader.load(null), null, this.urls, this.manual);
-		player.start();
+		try {
+			AnimationPlayer player = new AnimationPlayer(null, this.loader.load(null), null, this.urls, this.manual);
+			player.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
