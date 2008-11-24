@@ -2,12 +2,14 @@ package com.md5.viewer.selector;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
 
+import com.md5.viewer.player.AnimationPlayer;
 import com.md5.viewer.selector.gui.AnimationSelectorGUI;
 import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
 
@@ -20,7 +22,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:09 EST
- * @version Modified date: 11-24-2008 14:54 EST
+ * @version Modified date: 11-24-2008 16:13 EST
  */
 public class AnimationSelector {
 	/**
@@ -48,10 +50,6 @@ public class AnimationSelector {
 	 * <code>URL</code> link to the animations.
 	 */
 	private Map<String, URL> animsURL;
-	/**
-	 * The flag indicates if the playback mode is manual.
-	 */
-	private boolean manual;
 
 	/**
 	 * Constructor of <code>AnimationSelector</code>.
@@ -74,6 +72,18 @@ public class AnimationSelector {
 	 */
 	public void display() {
 		this.gui.setVisible(true);
+	}
+	
+	/**
+	 * Start the player.
+	 */
+	public void startPlayer() {
+		List<URL> urls = new ArrayList<URL>();
+		for(URL url : this.animsURL.values()) {
+			urls.add(url);
+		}
+		AnimationPlayer player = new AnimationPlayer(this.dir, this.hierarchy, this.baseAnimURL, urls, this.gui.isManual());
+		player.start();
 	}
 	
 	/**

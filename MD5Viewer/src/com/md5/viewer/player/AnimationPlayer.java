@@ -25,7 +25,7 @@ import com.model.md5.interfaces.IMD5Node;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:12 EST
- * @version Modified date: 11-24-2008 10:09 EST
+ * @version Modified date: 11-24-2008 16:13 EST
  */
 public class AnimationPlayer extends SimpleGame {
 	/**
@@ -97,6 +97,7 @@ public class AnimationPlayer extends SimpleGame {
 		this.manual = manual;
 		this.keyBinding = KeyBindingManager.getKeyBindingManager();
 		this.importer = MD5Importer.getInstance();
+		this.setConfigShowMode(ConfigShowMode.AlwaysShow);
 	}
 
 	@Override

@@ -20,7 +20,7 @@ import com.md5.viewer.selector.gui.enumn.EButton;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:52 EST
- * @version Modified date: 11-24-2008 14:58 EST
+ * @version Modified date: 11-24-2008 16:08 EST
  */
 public class MD5MouseHandler extends MouseAdapter {
 	/**
@@ -64,7 +64,7 @@ public class MD5MouseHandler extends MouseAdapter {
 			case RemoveAnimation:
 				this.seletor.removeAnimation(this.seletor.getGUI().getSelectedAnim());
 				break;
-			case OK: break;
+			case OK: this.seletor.startPlayer(); break;
 			case Cancel: System.exit(0); break;
 			}
 		} catch (MalformedURLException e) {
