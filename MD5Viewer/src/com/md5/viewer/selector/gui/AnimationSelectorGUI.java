@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -27,7 +28,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:42 EST
- * @version Modified date: 11-24-2008 13:07 EST
+ * @version Modified date: 11-24-2008 14:43 EST
  */
 public class AnimationSelectorGUI extends JFrame {
     /**
@@ -55,9 +56,9 @@ public class AnimationSelectorGUI extends JFrame {
     private JTextField txtBaseAnimation;
     private JTextField txtHierarchyFile;
     /**
-     * The <code>AnimationList</code> instance.
+     * The <code>DefaultListModel</code> instance.
      */
-    private AnimationList list;
+    private DefaultListModel listModel;
     
     /**
      * Constructor of <code>AnimationSelectorGUI</code>.
@@ -82,7 +83,6 @@ public class AnimationSelectorGUI extends JFrame {
      * Initialize the GUI components.
      */
     public void initComponents() {
-    	this.list = new AnimationList();
     	this.setResizable(false);
         jScrollPane1 = new JScrollPane();
         lstAnimations = new JList();
@@ -100,8 +100,9 @@ public class AnimationSelectorGUI extends JFrame {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        this.listModel = new DefaultListModel();
         lstAnimations.setBorder(BorderFactory.createEtchedBorder());
-        lstAnimations.setModel(this.list);
+        lstAnimations.setModel(this.listModel);
         jScrollPane1.setViewportView(lstAnimations);
 
         lblBodyHierarchy.setLabelFor(txtHierarchyFile);
@@ -213,5 +214,29 @@ public class AnimationSelectorGUI extends JFrame {
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pack();
+    }
+    
+    /**
+     * Set the text for the hierarchy.
+     * @param text The <code>String</code> text.
+     */
+    public void setHierarchyText(String text) {
+    	this.txtHierarchyFile.setText(text);
+    }
+    
+    /**
+     * Set the text for the base animation.
+     * @param text The <code>String</code> text.
+     */
+    public void setBaseAnimText(String text) {
+    	this.txtBaseAnimation.setText(text);
+    }
+    
+    /**
+     * Add the given animation text to the list.
+     * @param text The <code>String</code> animation file text.
+     */
+    public void addAnimation(String text) {
+    	this.listModel.addElement(text);
     }
 }

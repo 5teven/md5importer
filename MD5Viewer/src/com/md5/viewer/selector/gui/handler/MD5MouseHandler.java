@@ -20,7 +20,7 @@ import com.md5.viewer.selector.gui.enumn.EButton;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:52 EST
- * @version Modified date: 11-24-2008 14:14 EST
+ * @version Modified date: 11-24-2008 14:38 EST
  */
 public class MD5MouseHandler extends MouseAdapter {
 	/**
@@ -53,16 +53,19 @@ public class MD5MouseHandler extends MouseAdapter {
 		try {
 			switch(enumn) {
 			case SelectHierarchy:
-				this.seletor.setHierarchyURL(this.selectFile("Select Hierarchy file", null));
+				this.seletor.setHierarchyURL(this.selectFile("Select hierarchy file", null));
 				break;
-			case SelectBaseAnimation: break;
-			case AddAnimation: break;
+			case SelectBaseAnimation:
+				this.seletor.setBaseAnimURL(this.selectFile("Select base animation file", "md5anim"));
+				break;
+			case AddAnimation:
+				this.seletor.addAnimation(this.selectFile("Select an animation file to add", "md5anim"));
+				break;
 			case RemoveAnimation: break;
 			case OK: break;
 			case Cancel: break;
 			}
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
