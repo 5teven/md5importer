@@ -1,5 +1,6 @@
 package com.md5.viewer.player;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -8,6 +9,7 @@ import com.jme.app.SimpleGame;
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.scene.Controller;
+import com.jme.scene.Spatial;
 import com.model.md5.controller.MD5Controller;
 import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Animation;
@@ -25,7 +27,7 @@ import com.model.md5.interfaces.IMD5Node;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:12 EST
- * @version Modified date: 11-24-2008 16:13 EST
+ * @version Modified date: 11-24-2008 23:26 EST
  */
 public class AnimationPlayer extends SimpleGame {
 	/**
@@ -37,13 +39,13 @@ public class AnimationPlayer extends SimpleGame {
 	 */
 	private final List<String> hierarchy;
 	/**
-	 * The <code>URL</code> link to the base animation.
+	 * The base animation <code>File</code>.
 	 */
-	private final URL baseAnimURL;
+	private final File baseAnimFile;
 	/**
-	 * The <code>List</code> of <code>URL</code> link to the animations.
+	 * The <code>List</code> of chain animation <code>File</code>.
 	 */
-	private final List<URL> urls;
+	private final List<File> animFiles;
 	/**
 	 * The flag indicates if the playback mode is manual.
 	 */
@@ -85,15 +87,16 @@ public class AnimationPlayer extends SimpleGame {
 	 * Constructor of <code>AnimationPlayer</code>.
 	 * @param dir The <code>String</code> directory of the hierarchy.
 	 * @param hierarchy The <code>List</code> of <code>String</code> animated parts.
-	 * @param baseAnimURL The <code>URL</code> link to the base animation.
-	 * @param urls The <code>List</code> of <code>URL</code> link to the animations.
+	 * @param baseAnimFile The base animation <code>File</code>.
+	 * @param animFiles The <code>List</code> of chain animation <code>File</code>.
 	 * @param manual True if the playback mode is manual. False automatic.
 	 */
-	public AnimationPlayer(String dir, List<String> hierarchy, URL baseAnimURL, List<URL> urls, boolean manual) {
+	public AnimationPlayer(String dir, List<String> hierarchy, File baseAnimFile, List<File> animFiles, boolean manual) {
+		if(dir == null || hierarchy == null || hierarchy .size() <= 0) throw new RuntimeException("Unable to load basic information.");
 		this.dir = dir;
 		this.hierarchy = hierarchy;
-		this.baseAnimURL = baseAnimURL;
-		this.urls = urls;
+		this.baseAnimFile = baseAnimFile;
+		this.animFiles = animFiles;
 		this.manual = manual;
 		this.keyBinding = KeyBindingManager.getKeyBindingManager();
 		this.importer = MD5Importer.getInstance();
@@ -107,7 +110,7 @@ public class AnimationPlayer extends SimpleGame {
 			this.loadAnimations();
 			this.setupController();
 			this.setupUtilityKey();
-			this.setupManualKey();
+			if(this.manual) this.setupManualKey();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -121,25 +124,39 @@ public class AnimationPlayer extends SimpleGame {
 			this.controller.setSpeed(this.controller.getSpeed() * 0.8f);
 		}
 		if(this.manual) {
+			IMD5Animation active = this.controller.getActiveAnimation();
 			if(this.keyBinding.isValidCommand("next", false)) {
-				IMD5Animation active = this.controller.getActiveAnimation();
-				if(active != null && active.getPercentage() >= 0.7f) {
-					this.controller.setRepeatType(Controller.RT_CLAMP);
-					this.controller.setFading(this.animations[this.index], 0.2f, false);
-					this.index++;
-					if(this.index >= this.animations.length) this.index = 0;
+				if(active != null) {
+					if(active == this.baseAnimation) this.incrementAnimation();
+					else if(active.getPercentage() >= 0.7f) this.incrementAnimation();
 				}
 			} else if(this.keyBinding.isValidCommand("reset", false)) {
 				this.resetAnimation();
 			}
-			if(this.controller.getActiveAnimation() != this.baseAnimation) {
+			if(active != this.baseAnimation && active.isCyleComplete()) {
 				this.count += this.tpf;
 				if(this.count >= 0.5f) {
 					this.resetAnimation();
 					this.count = 0;
 				}
 			}
+		} else {
+			if(this.controller.getActiveAnimation().isCyleComplete()) {
+				this.controller.setFading(this.animations[this.index], 0, false);
+				this.index++;
+				if(this.index >= this.animations.length) this.index = 0;
+			}
 		}
+	}
+	
+	/**
+	 * Increment the animation chain.
+	 */
+	private void incrementAnimation() {
+		this.controller.setRepeatType(Controller.RT_CLAMP);
+		this.controller.setFading(this.animations[this.index], 0.2f, false);
+		this.index++;
+		if(this.index >= this.animations.length) this.index = 0;
 	}
 	
 	/**
@@ -157,17 +174,21 @@ public class AnimationPlayer extends SimpleGame {
 	 */
 	private void loadModelMesh() throws IOException {
 		// Load the base model mesh.
-		URL url = this.getClass().getClassLoader().getResource(this.dir + this.hierarchy.get(0) + ".md5mesh");
+		File file = new File(this.dir + this.hierarchy.get(0) + ".md5mesh");
+		URL url = file.toURI().toURL();
 		this.importer.loadMesh(url, "Mesh0");
 		this.modelMesh = this.importer.getModelNode();
 		this.importer.cleanup();
 		// Load the dependent children.
 		for(int i = 1; i < this.hierarchy.size(); i++) {
-			url = this.getClass().getClassLoader().getResource(this.dir + this.hierarchy.get(i) + ".md5mesh");
+			file = new File(this.dir + this.hierarchy.get(i) + ".md5mesh");
+			url = file.toURI().toURL();
 			this.importer.loadMesh(url, "Mesh"+i);
 			this.modelMesh.attachDependent(this.importer.getModelNode());
 			this.importer.cleanup();
 		}
+		// Attach to root node.
+		this.rootNode.attachChild((Spatial)this.modelMesh);
 	}
 	
 	/**
@@ -175,14 +196,16 @@ public class AnimationPlayer extends SimpleGame {
 	 * @throws IOException If the loading process is interrupted.
 	 */
 	private void loadAnimations() throws IOException {
-		// Load the base animation.
-		this.importer.loadAnim(this.baseAnimURL, "BaseAnimation");
-		this.baseAnimation = this.importer.getAnimation();
-		this.importer.cleanup();
+		// Load the base animation if it is manual.
+		if(this.manual) {
+			this.importer.loadAnim(this.baseAnimFile.toURI().toURL(), "BaseAnimation");
+			this.baseAnimation = this.importer.getAnimation();
+			this.importer.cleanup();
+		}
 		// Load the animation chain.
-		this.animations = new IMD5Animation[this.urls.size()];
+		this.animations = new IMD5Animation[this.animFiles.size()];
 		for(int i = 0; i < this.animations.length; i++) {
-			this.importer.loadAnim(this.urls.get(i), "Animation"+i);
+			this.importer.loadAnim(this.animFiles.get(i).toURI().toURL(), "Animation"+i);
 			this.animations[i] = this.importer.getAnimation();
 			this.importer.cleanup();
 		}
@@ -194,9 +217,14 @@ public class AnimationPlayer extends SimpleGame {
 	private void setupController() {
 		this.controller = new MD5Controller(this.modelMesh);
 		this.controller.setActive(true);
-		this.controller.setRepeatType(Controller.RT_WRAP);
-		this.controller.setFading(this.baseAnimation, 0, false);
 		this.modelMesh.addController(this.controller);
+		// Set proper starting animation.
+		if(this.manual) this.resetAnimation();
+		else {
+			this.controller.setFading(this.animations[0], 0, false);
+			this.controller.setRepeatType(Controller.RT_CLAMP);
+			this.index = 1;
+		}
 	}
 	
 	/**

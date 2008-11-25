@@ -1,7 +1,7 @@
 package com.md5.viewer.selector;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,7 +13,7 @@ import java.util.Scanner;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:19 EST
- * @version Modified date: 11-24-2008 14:14 EST
+ * @version Modified date: 11-24-2008 22:46 EST
  */
 public class HierarchyLoader {
 	/**
@@ -27,14 +27,14 @@ public class HierarchyLoader {
 	public HierarchyLoader() {}
 	
 	/**
-	 * Load the hierarchy information from the file linked by given URL.
-	 * @param file The <code>URL</code> links to the file to be loaded.
+	 * Load the hierarchy information from the given file.
+	 * @param file The hierarchy <code>File</code> to be loaded.
 	 * @return The loaded <code>List</code> of <code>String</code> hierarchy.
 	 * @throws IOException If input scan is interrupted.
 	 */
-	public List<String> load(URL file) throws IOException {
+	public List<String> load(File file) throws IOException {
 		ArrayList<String> list = new ArrayList<String>();
-		Scanner scanner = new Scanner(file.openStream());
+		Scanner scanner = new Scanner(file.toURI().toURL().openStream());
 		while(scanner.hasNextLine()) {
 			list.add(scanner.nextLine().trim());
 		}
@@ -47,7 +47,7 @@ public class HierarchyLoader {
 	 * Retrieve the base directory for the hierarchy file and the mesh files.
 	 * @return The <code>String</code> base directory.
 	 */
-	public String getBaseDirectory() {
+	public String getDirectory() {
 		return this.dir;
 	}
 }

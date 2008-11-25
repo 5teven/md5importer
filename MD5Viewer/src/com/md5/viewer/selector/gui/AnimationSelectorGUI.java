@@ -29,7 +29,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:42 EST
- * @version Modified date: 11-24-2008 21:12 EST
+ * @version Modified date: 11-24-2008 22:56 EST
  */
 public class AnimationSelectorGUI extends JFrame {
 	/**
@@ -86,6 +86,7 @@ public class AnimationSelectorGUI extends JFrame {
 	 */
 	public void initComponents() {
 		this.setResizable(false);
+		this.setLocationByPlatform(true);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.jScrollPane1 = new JScrollPane();
 		this.lstAnimations = new JList();

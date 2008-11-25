@@ -4,7 +4,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -20,7 +19,7 @@ import com.md5.viewer.selector.gui.enumn.EButton;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:52 EST
- * @version Modified date: 11-24-2008 16:08 EST
+ * @version Modified date: 11-24-2008 22:50 EST
  */
 public class MD5MouseHandler extends MouseAdapter {
 	/**
@@ -53,10 +52,10 @@ public class MD5MouseHandler extends MouseAdapter {
 		try {
 			switch(enumn) {
 			case SelectHierarchy:
-				this.seletor.setHierarchyURL(this.selectFile("Select hierarchy file", null));
+				this.seletor.setHierarchyFile(this.selectFile("Select hierarchy file", null));
 				break;
 			case SelectBaseAnimation:
-				this.seletor.setBaseAnimURL(this.selectFile("Select base animation file", "md5anim"));
+				this.seletor.setBaseAnimFile(this.selectFile("Select base animation file", "md5anim"));
 				break;
 			case AddAnimation:
 				this.seletor.addAnimation(this.selectFile("Select an animation file to add", "md5anim"));
@@ -64,7 +63,7 @@ public class MD5MouseHandler extends MouseAdapter {
 			case RemoveAnimation:
 				this.seletor.removeAnimation(this.seletor.getGUI().getSelectedAnim());
 				break;
-			case OK: this.seletor.startPlayer(); break;
+			case OK: this.seletor.setCompleted(); break;
 			case Cancel: System.exit(0); break;
 			}
 		} catch (MalformedURLException e) {
@@ -76,15 +75,15 @@ public class MD5MouseHandler extends MouseAdapter {
 	 * Select a file with given dialog title and file extension.
 	 * @param title The <code>String</code> dialog title.
 	 * @param extension The <code>String</code> file extension to filter.
-	 * @return The selected file <code>URL</code>.
+	 * @return The selected <code>File</code>.
 	 * @throws MalformedURLException If selection is interrupted.
 	 */
-	private URL selectFile(String title, final String extension) throws MalformedURLException {
+	private File selectFile(String title, final String extension) throws MalformedURLException {
 		this.chooser.setDialogTitle(title);
 		this.filter.setExtension(extension);
 		this.chooser.showOpenDialog(null);
 		File file = this.chooser.getSelectedFile();
-		if(file != null) return this.chooser.getSelectedFile().toURI().toURL();
+		if(file != null) return this.chooser.getSelectedFile();
 		else return null;
 	}
 	

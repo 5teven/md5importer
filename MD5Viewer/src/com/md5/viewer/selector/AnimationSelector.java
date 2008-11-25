@@ -1,7 +1,7 @@
 package com.md5.viewer.selector;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +9,6 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import com.md5.viewer.player.AnimationPlayer;
 import com.md5.viewer.selector.gui.AnimationSelectorGUI;
 import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
 
@@ -22,7 +21,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:09 EST
- * @version Modified date: 11-24-2008 16:13 EST
+ * @version Modified date: 11-24-2008 23:15 EST
  */
 public class AnimationSelector {
 	/**
@@ -42,20 +41,28 @@ public class AnimationSelector {
 	 */
 	private List<String> hierarchy;
 	/**
-	 * The <code>URL</code> link to the base animation.
+	 * The base animation <code>File</code>.
 	 */
-	private URL baseAnimURL;
+	private File baseAnimFile;
 	/**
-	 * The <code>Map</code> of <code>String</code> file name and file
-	 * <code>URL</code> link to the animations.
+	 * The <code>Map</code> of <code>String</code> file name and animations <code>File</code>.
 	 */
-	private Map<String, URL> animsURL;
+	private final Map<String, File> animMap;
+	/**
+	 * The <code>List</code> of chain animation <code>File</code>.
+	 */
+	private final List<File> animFiles;
+	/**
+	 * The flag indicates if all selection is completed.
+	 */
+	private boolean completed;
 
 	/**
 	 * Constructor of <code>AnimationSelector</code>.
 	 */
 	public AnimationSelector() {
-		this.animsURL = new HashMap<String, URL>();
+		this.animMap = new HashMap<String, File>();
+		this.animFiles = new ArrayList<File>();
 	}
 
 	/**
@@ -75,29 +82,18 @@ public class AnimationSelector {
 	}
 	
 	/**
-	 * Start the player.
+	 * Add the given animation file to the chain list.
+	 * @param file The animation <code>File</code>.
 	 */
-	public void startPlayer() {
-		List<URL> urls = new ArrayList<URL>();
-		for(URL url : this.animsURL.values()) {
-			urls.add(url);
-		}
-		AnimationPlayer player = new AnimationPlayer(this.dir, this.hierarchy, this.baseAnimURL, urls, this.gui.isManual());
-		player.start();
-	}
-	
-	/**
-	 * Add the given URL animation to the chain list.
-	 * @param url The <code>URL</code> links to the animation file.
-	 */
-	public void addAnimation(URL url) {
-		if(url == null) return;
-		String name = this.getFileName(url);
-		if(this.animsURL.containsKey(name)) {
+	public void addAnimation(File file) {
+		if(file == null) return;
+		String name = file.getName();
+		if(this.animMap.containsKey(name)) {
 			JOptionPane.showMessageDialog(null, "Selected animation is already added.");
 			return;
 		}
-		this.animsURL.put(name, url);
+		this.animMap.put(name, file);
+		this.animFiles.add(file);
 		this.gui.addAnimation(name);
 	}
 	
@@ -106,35 +102,44 @@ public class AnimationSelector {
 	 * @param fileName The <code>String</code> file name.
 	 */
 	public void removeAnimation(String fileName) {
-		this.animsURL.remove(fileName);
+		File file = this.animMap.remove(fileName);
+		this.animFiles.remove(file);
 		this.gui.removeAnimation(fileName);
 	}
 	
 	/**
-	 * Set the hierarchy URL.
-	 * @param url The <code>URL</code> link to the hierarchy file.
+	 * Set the hierarchy file.
+	 * @param file The hierarchy <code>File</code>.
 	 */
-	public void setHierarchyURL(URL url) {
-		if(url == null) return;
+	public void setHierarchyFile(File file) {
+		if(file == null) return;
 		try {
-			this.hierarchy = this.loader.load(url);
-			this.dir = this.loader.getBaseDirectory();
-			this.gui.setHierarchyText(this.getFileName(url));
+			this.hierarchy = this.loader.load(file);
+			this.dir = this.loader.getDirectory();
+			this.gui.setHierarchyText(file.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	/**
-	 * Set the base animation URL.
-	 * @param url The <code>URL</code> link to the base animation file.
+	 * Set the base animation file.
+	 * @param file The base animation <code>File</code>.
 	 */
-	public void setBaseAnimURL(URL url) {
-		if(url == null) return;
-		this.baseAnimURL = url;
-		this.gui.setBaseAnimText(this.getFileName(url));
+	public void setBaseAnimFile(File file) {
+		if(file == null) return;
+		this.baseAnimFile = file;
+		this.gui.setBaseAnimText(file.getName());
 	}
 	
+	/**
+	 * Set the selection process to be completed.
+	 */
+	public void setCompleted() {
+		this.completed = true;
+		this.gui.setVisible(false);
+	}
+
 	/**
 	 * Retrieve the selector GUI.
 	 * @return The <code>AnimationSelectorGUI</code> instance.
@@ -144,12 +149,50 @@ public class AnimationSelector {
 	}
 	
 	/**
-	 * Retrieve the name of the file linked by given URL.
-	 * @param url The <code>URL</code> that links to the file.
-	 * @return The <code>String</code> file name.
+	 * Retrieve the base directory for the hierarchy file and the mesh files.
+	 * @return The <code>String</code> base directory.
 	 */
-	private String getFileName(URL url) {
-		String file = url.getFile();
-		return file.substring(file.lastIndexOf("/")+1, file.length());
+	public String getDirectory() {
+		return this.dir;
+	}
+	
+	/**
+	 * Retrieve the mesh hierarchy list.
+	 * @return The <code>List</code> of <code>String</code> hierarchy.
+	 */
+	public List<String> getHierarchy() {
+		return this.hierarchy;
+	}
+	
+	/**
+	 * Retrieve the base animation file.
+	 * @return The base animation <code>File</code>.
+	 */
+	public File getBaseAnim() {
+		return this.baseAnimFile;
+	}
+	
+	/**
+	 * Retrieve the list of chain animation file.
+	 * @return The <code>List</code> of chain animation <code>File</code>.
+	 */
+	public List<File> getAnimations() {
+		return this.animFiles;
+	}
+	
+	/**
+	 * Retrieve the play back mode.
+	 * @return True if the play back mode is manual. False automatic.
+	 */
+	public boolean getPlayMode() {
+		return this.gui.isManual();
+	}
+	
+	/**
+	 * Check if the selection process is completed.
+	 * @return True if the process is completed. False otherwise.
+	 */
+	public boolean isCompleted() {
+		return this.completed;
 	}
 }
