@@ -6,10 +6,12 @@ import java.net.URL;
 import java.util.List;
 
 import com.jme.app.SimpleGame;
+import com.jme.bounding.BoundingBox;
 import com.jme.input.KeyBindingManager;
-import com.jme.input.KeyInput;
+import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
+import com.md5.viewer.player.enumn.ECommand;
 import com.model.md5.controller.MD5Controller;
 import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Animation;
@@ -27,7 +29,7 @@ import com.model.md5.interfaces.IMD5Node;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:12 EST
- * @version Modified date: 11-24-2008 23:26 EST
+ * @version Modified date: 11-25-2008 00:46 EST
  */
 public class AnimationPlayer extends SimpleGame {
 	/**
@@ -82,6 +84,10 @@ public class AnimationPlayer extends SimpleGame {
 	 * The elapsed time since last fading to a new animation.
 	 */
 	private float count;
+	/**
+	 * The temporary <code>Vector3f</code> used for updating camera.
+	 */
+	private final Vector3f tempVector;
 
 	/**
 	 * Constructor of <code>AnimationPlayer</code>.
@@ -100,6 +106,7 @@ public class AnimationPlayer extends SimpleGame {
 		this.manual = manual;
 		this.keyBinding = KeyBindingManager.getKeyBindingManager();
 		this.importer = MD5Importer.getInstance();
+		this.tempVector = new Vector3f();
 		this.setConfigShowMode(ConfigShowMode.AlwaysShow);
 	}
 
@@ -114,41 +121,90 @@ public class AnimationPlayer extends SimpleGame {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		this.rootNode.updateGeometricState(0, true);
+		this.updateCameraPosition(ECommand.CameraPerspective);
 	}
-	
+
 	@Override
 	protected void simpleUpdate() {
-		if(this.keyBinding.isValidCommand("speedup", false)) {
+		this.updateUtility();
+		if(this.manual) this.updateManual();
+		else this.updateAutomatic();
+	}
+
+	/**
+	 * Update the utility control.
+	 */
+	private void updateUtility() {
+		if(this.keyBinding.isValidCommand(ECommand.IncreaseSpeed.name(), false)) {
 			this.controller.setSpeed(this.controller.getSpeed() * 1.2f);
-		} else if(this.keyBinding.isValidCommand("slowdown", false)) {
+		} else if(this.keyBinding.isValidCommand(ECommand.DecreaseSpeed.name(), false)) {
 			this.controller.setSpeed(this.controller.getSpeed() * 0.8f);
 		}
-		if(this.manual) {
-			IMD5Animation active = this.controller.getActiveAnimation();
-			if(this.keyBinding.isValidCommand("next", false)) {
-				if(active != null) {
-					if(active == this.baseAnimation) this.incrementAnimation();
-					else if(active.getPercentage() >= 0.7f) this.incrementAnimation();
-				}
-			} else if(this.keyBinding.isValidCommand("reset", false)) {
+		if(this.keyBinding.isValidCommand(ECommand.CameraFont.name(), false)) {
+			this.updateCameraPosition(ECommand.CameraFont);
+		} else if(this.keyBinding.isValidCommand(ECommand.CameraSide.name(), false)) {
+			this.updateCameraPosition(ECommand.CameraSide);
+		} else if(this.keyBinding.isValidCommand(ECommand.CameraPerspective.name(), false)) {
+			this.updateCameraPosition(ECommand.CameraPerspective);
+		}
+	}
+
+	/**
+	 * Update the manual control.
+	 */
+	private void updateManual() {
+		IMD5Animation active = this.controller.getActiveAnimation();
+		if(this.keyBinding.isValidCommand(ECommand.IncrementAnimation.name(), false)) {
+			if(active != null) {
+				if(active == this.baseAnimation) this.incrementAnimation();
+				else if(active.getPercentage() >= 0.7f) this.incrementAnimation();
+			}
+		} else if(this.keyBinding.isValidCommand(ECommand.ResetAnimation.name(), false)) {
+			this.resetAnimation();
+		}
+		if(active != this.baseAnimation && active.isCyleComplete()) {
+			this.count += this.tpf;
+			if(this.count >= 0.5f) {
 				this.resetAnimation();
-			}
-			if(active != this.baseAnimation && active.isCyleComplete()) {
-				this.count += this.tpf;
-				if(this.count >= 0.5f) {
-					this.resetAnimation();
-					this.count = 0;
-				}
-			}
-		} else {
-			if(this.controller.getActiveAnimation().isCyleComplete()) {
-				this.controller.setFading(this.animations[this.index], 0, false);
-				this.index++;
-				if(this.index >= this.animations.length) this.index = 0;
+				this.count = 0;
 			}
 		}
 	}
-	
+
+	/**
+	 * Update the automatic control.
+	 */
+	private void updateAutomatic() {
+		if(this.controller.getActiveAnimation() != null && this.animations.length > 0 && this.controller.getActiveAnimation().isCyleComplete()) {
+			this.controller.setFading(this.animations[this.index], 0, false);
+			this.index++;
+			if(this.index >= this.animations.length) this.index = 0;
+		}
+	}
+
+	/**
+	 * Update the camera position based on the camera command.
+	 * @param command The <code>ECommand</code> enumeration.
+	 */
+	private void updateCameraPosition(ECommand command) {
+		float x = ((BoundingBox)((Spatial)this.modelMesh).getWorldBound()).xExtent;
+		float y = ((BoundingBox)((Spatial)this.modelMesh).getWorldBound()).yExtent;
+		float z = ((BoundingBox)((Spatial)this.modelMesh).getWorldBound()).zExtent;
+		float posx = x*2.0f;
+		if(posx < 15) posx = 15;
+		float posy = y;
+		float posz = z*2.0f;
+		if(posz < 15) posz = 15;
+		this.tempVector.set(((Spatial)this.modelMesh).getWorldTranslation());
+		switch(command) {
+		case CameraFont: this.cam.setLocation(this.tempVector.addLocal(0, posy, posz)); break;
+		case CameraSide: this.cam.setLocation(this.tempVector.addLocal(posx, posy, 0)); break;
+		case CameraPerspective: this.cam.setLocation(this.tempVector.addLocal(posx, posy, posz)); break;
+		}
+		this.cam.lookAt(((Spatial)this.modelMesh).getWorldTranslation().addLocal(0, posy, 0), Vector3f.UNIT_Y);
+	}
+
 	/**
 	 * Increment the animation chain.
 	 */
@@ -158,7 +214,7 @@ public class AnimationPlayer extends SimpleGame {
 		this.index++;
 		if(this.index >= this.animations.length) this.index = 0;
 	}
-	
+
 	/**
 	 * Reset the animation back to the base animation.
 	 */
@@ -167,7 +223,7 @@ public class AnimationPlayer extends SimpleGame {
 		this.controller.setFading(this.baseAnimation, 0.2f, false);
 		this.index = 0;
 	}
-	
+
 	/**
 	 * Load the mesh of the model based on the hierarchy.
 	 * @throws IOException If the loading process is interrupted.
@@ -190,18 +246,16 @@ public class AnimationPlayer extends SimpleGame {
 		// Attach to root node.
 		this.rootNode.attachChild((Spatial)this.modelMesh);
 	}
-	
+
 	/**
 	 * Load the animations from the URL links.
 	 * @throws IOException If the loading process is interrupted.
 	 */
 	private void loadAnimations() throws IOException {
-		// Load the base animation if it is manual.
-		if(this.manual) {
-			this.importer.loadAnim(this.baseAnimFile.toURI().toURL(), "BaseAnimation");
-			this.baseAnimation = this.importer.getAnimation();
-			this.importer.cleanup();
-		}
+		// Load the base animation.
+		this.importer.loadAnim(this.baseAnimFile.toURI().toURL(), "BaseAnimation");
+		this.baseAnimation = this.importer.getAnimation();
+		this.importer.cleanup();
 		// Load the animation chain.
 		this.animations = new IMD5Animation[this.animFiles.size()];
 		for(int i = 0; i < this.animations.length; i++) {
@@ -210,7 +264,7 @@ public class AnimationPlayer extends SimpleGame {
 			this.importer.cleanup();
 		}
 	}
-	
+
 	/**
 	 * Set the controller on the loaded model mesh.
 	 */
@@ -220,26 +274,31 @@ public class AnimationPlayer extends SimpleGame {
 		this.modelMesh.addController(this.controller);
 		// Set proper starting animation.
 		if(this.manual) this.resetAnimation();
-		else {
-			this.controller.setFading(this.animations[0], 0, false);
-			this.controller.setRepeatType(Controller.RT_CLAMP);
-			this.index = 1;
+		else if(!this.manual){
+			if(this.animations.length > 0) {
+				this.controller.setFading(this.animations[0], 0, false);
+				this.controller.setRepeatType(Controller.RT_CLAMP);
+				this.index = 1;
+			} else if(this.baseAnimation != null) this.resetAnimation();
 		}
 	}
-	
+
 	/**
 	 * Setup the utility control hot keys.
 	 */
 	private void setupUtilityKey() {
-		this.keyBinding.set("speedup", KeyInput.KEY_EQUALS);
-		this.keyBinding.set("slowdown", KeyInput.KEY_MINUS);
+		this.keyBinding.set(ECommand.IncreaseSpeed.name(), ECommand.IncreaseSpeed.getKeyCode());
+		this.keyBinding.set(ECommand.DecreaseSpeed.name(), ECommand.DecreaseSpeed.getKeyCode());
+		this.keyBinding.set(ECommand.CameraFont.name(), ECommand.CameraFont.getKeyCode());
+		this.keyBinding.set(ECommand.CameraSide.name(), ECommand.CameraSide.getKeyCode());
+		this.keyBinding.set(ECommand.CameraPerspective.name(), ECommand.CameraPerspective.getKeyCode());
 	}
-	
+
 	/**
 	 * Setup the control hot keys for manual mode.
 	 */
 	private void setupManualKey() {
-		this.keyBinding.set("next", KeyInput.KEY_SPACE);
-		this.keyBinding.set("reset", KeyInput.KEY_BACK);
+		this.keyBinding.set(ECommand.IncrementAnimation.name(), ECommand.IncrementAnimation.getKeyCode());
+		this.keyBinding.set(ECommand.ResetAnimation.name(), ECommand.ResetAnimation.getKeyCode());
 	}
 }
