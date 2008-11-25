@@ -8,6 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -28,7 +29,7 @@ import com.md5.viewer.selector.gui.handler.MD5MouseHandler;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-24-2008 12:42 EST
- * @version Modified date: 11-24-2008 16:14 EST
+ * @version Modified date: 11-24-2008 21:12 EST
  */
 public class AnimationSelectorGUI extends JFrame {
 	/**
@@ -55,6 +56,7 @@ public class AnimationSelectorGUI extends JFrame {
 	private JList lstAnimations;
 	private JTextField txtBaseAnimation;
 	private JTextField txtHierarchyFile;
+	private JCheckBox chkManual;
 	/**
 	 * The <code>DefaultListModel</code> instance.
 	 */
@@ -84,136 +86,138 @@ public class AnimationSelectorGUI extends JFrame {
 	 */
 	public void initComponents() {
 		this.setResizable(false);
-		jScrollPane1 = new JScrollPane();
-		lstAnimations = new JList();
-		lblBodyHierarchy = new JLabel();
-		txtHierarchyFile = new JTextField();
-		btnHierarchyLoad = new JButton();
-		lblBaseAnimation = new JLabel();
-		txtBaseAnimation = new JTextField();
-		btnBaseAnimLoad = new JButton();
-		btnAdd = new JButton();
-		lblAnimations = new JLabel();
-		btnRemove = new JButton();
-		btnOK = new JButton();
-		btnCancel = new JButton();
-
-		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		this.jScrollPane1 = new JScrollPane();
+		this.lstAnimations = new JList();
+		this.lblBodyHierarchy = new JLabel();
+		this.txtHierarchyFile = new JTextField();
+		this.btnHierarchyLoad = new JButton();
+		this.lblBaseAnimation = new JLabel();
+		this.txtBaseAnimation = new JTextField();
+		this.btnBaseAnimLoad = new JButton();
+		this.btnAdd = new JButton();
+		this.lblAnimations = new JLabel();
+		this.btnRemove = new JButton();
+		this.btnOK = new JButton();
+		this.btnCancel = new JButton();
+		this.chkManual = new JCheckBox("Manual control");
 
 		this.listModel = new DefaultListModel();
-		lstAnimations.setBorder(BorderFactory.createEtchedBorder());
-		lstAnimations.setModel(this.listModel);
-		jScrollPane1.setViewportView(lstAnimations);
+		this.lstAnimations.setBorder(BorderFactory.createEtchedBorder());
+		this.lstAnimations.setModel(this.listModel);
+		this.jScrollPane1.setViewportView(this.lstAnimations);
 
-		lblBodyHierarchy.setLabelFor(txtHierarchyFile);
-		lblBodyHierarchy.setText("Model Hierarchy");
+		this.lblBodyHierarchy.setLabelFor(this.txtHierarchyFile);
+		this.lblBodyHierarchy.setText("Model Hierarchy");
 
-		txtHierarchyFile.setEditable(false);
-		txtHierarchyFile.setText("<Select A File>");
+		this.txtHierarchyFile.setEditable(false);
+		this.txtHierarchyFile.setText("<Select A File>");
 
-		btnHierarchyLoad.setText(EButton.SelectHierarchy.getText());
-		btnHierarchyLoad.setToolTipText("Select a Model Hierarchy File");
-		btnHierarchyLoad.setName(EButton.SelectHierarchy.name());
-		btnHierarchyLoad.addMouseListener(this.handler);
+		this.btnHierarchyLoad.setText(EButton.SelectHierarchy.getText());
+		this.btnHierarchyLoad.setToolTipText("Select a Model Hierarchy File");
+		this.btnHierarchyLoad.setName(EButton.SelectHierarchy.name());
+		this.btnHierarchyLoad.addMouseListener(this.handler);
 
-		lblBaseAnimation.setText("Base Animation");
+		this.lblBaseAnimation.setText("Base Animation");
 
-		txtBaseAnimation.setEditable(false);
-		txtBaseAnimation.setText("<Select A File>");
+		this.txtBaseAnimation.setEditable(false);
+		this.txtBaseAnimation.setText("<Select A File>");
 
-		btnBaseAnimLoad.setText(EButton.SelectBaseAnimation.getText());
-		btnBaseAnimLoad.setToolTipText("Select a base animation file");
-		btnBaseAnimLoad.setName(EButton.SelectBaseAnimation.name());
-		btnBaseAnimLoad.addMouseListener(this.handler);
+		this.btnBaseAnimLoad.setText(EButton.SelectBaseAnimation.getText());
+		this.btnBaseAnimLoad.setToolTipText("Select a base animation file");
+		this.btnBaseAnimLoad.setName(EButton.SelectBaseAnimation.name());
+		this.btnBaseAnimLoad.addMouseListener(this.handler);
 
-		btnAdd.setText(EButton.AddAnimation.getText());
-		btnAdd.setToolTipText("Add an animation for playback");
-		btnAdd.setName(EButton.AddAnimation.name());
-		btnAdd.addMouseListener(this.handler);
+		this.btnAdd.setText(EButton.AddAnimation.getText());
+		this.btnAdd.setToolTipText("Add an animation for playback");
+		this.btnAdd.setName(EButton.AddAnimation.name());
+		this.btnAdd.addMouseListener(this.handler);
 
-		lblAnimations.setText("Animations");
+		this.lblAnimations.setText("Animations");
 
-		btnRemove.setText(EButton.RemoveAnimation.getText());
-		btnRemove.setToolTipText("Remove the selected animation");
-		btnRemove.setName(EButton.RemoveAnimation.name());
-		btnRemove.addMouseListener(this.handler);
+		this.btnRemove.setText(EButton.RemoveAnimation.getText());
+		this.btnRemove.setToolTipText("Remove the selected animation");
+		this.btnRemove.setName(EButton.RemoveAnimation.name());
+		this.btnRemove.addMouseListener(this.handler);
 
-		btnOK.setText(EButton.OK.getText());
-		btnOK.setToolTipText("Enter the MD5 Viewer");
-		btnOK.setName(EButton.OK.name());
-		btnOK.addMouseListener(this.handler);
+		this.btnOK.setText(EButton.OK.getText());
+		this.btnOK.setToolTipText("Enter the MD5 Viewer");
+		this.btnOK.setName(EButton.OK.name());
+		this.btnOK.addMouseListener(this.handler);
 
-		btnCancel.setText(EButton.Cancel.getText());
-		btnCancel.setToolTipText("Exit the application");
-		btnCancel.setName(EButton.Cancel.name());
-		btnCancel.addMouseListener(this.handler);
+		this.btnCancel.setText(EButton.Cancel.getText());
+		this.btnCancel.setToolTipText("Exit the application");
+		this.btnCancel.setName(EButton.Cancel.name());
+		this.btnCancel.addMouseListener(this.handler);
 
-		GroupLayout layout = new GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
+		GroupLayout layout = new GroupLayout(this.getContentPane());
+		this.getContentPane().setLayout(layout);
 		layout.setHorizontalGroup(
 				layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
 						.addContainerGap()
 						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-								.addComponent(lblBodyHierarchy)
-								.addComponent(lblBaseAnimation)
-								.addComponent(lblAnimations)
+								.addComponent(this.lblBodyHierarchy)
+								.addComponent(this.lblBaseAnimation)
+								.addComponent(this.lblAnimations)
+								.addComponent(this.chkManual)
 								.addGroup(layout.createSequentialGroup()
 										.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-												.addComponent(txtHierarchyFile, GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-												.addComponent(txtBaseAnimation, GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-												.addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))
+												.addComponent(this.txtHierarchyFile, GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+												.addComponent(this.txtBaseAnimation, GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+												.addComponent(this.jScrollPane1, GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))
 												.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
 												.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-														.addComponent(btnRemove)
-														.addComponent(btnAdd, GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-														.addComponent(btnBaseAnimLoad, GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-														.addComponent(btnHierarchyLoad, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)))
+														.addComponent(this.btnRemove)
+														.addComponent(this.btnAdd, GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+														.addComponent(this.btnBaseAnimLoad, GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+														.addComponent(this.btnHierarchyLoad, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)))
 														.addGroup(layout.createSequentialGroup()
-																.addComponent(btnOK, GroupLayout.PREFERRED_SIZE, 83, GroupLayout.PREFERRED_SIZE)
+																.addComponent(this.btnOK, GroupLayout.PREFERRED_SIZE, 83, GroupLayout.PREFERRED_SIZE)
 																.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																.addComponent(btnCancel, GroupLayout.PREFERRED_SIZE, 94, GroupLayout.PREFERRED_SIZE)
+																.addComponent(this.btnCancel, GroupLayout.PREFERRED_SIZE, 94, GroupLayout.PREFERRED_SIZE)
 																.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 92, Short.MAX_VALUE)))
 																.addContainerGap())
 		);
 
-		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {btnOK, btnCancel});
+		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {this.btnOK, this.btnCancel});
 
-		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {btnAdd, btnBaseAnimLoad, btnHierarchyLoad, btnRemove});
+		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {this.btnAdd, this.btnBaseAnimLoad, this.btnHierarchyLoad, this.btnRemove});
 
-		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jScrollPane1, txtBaseAnimation, txtHierarchyFile});
+		layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {this.jScrollPane1, this.txtBaseAnimation, this.txtHierarchyFile});
 
 		layout.setVerticalGroup(
 				layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
 						.addContainerGap()
-						.addComponent(lblBodyHierarchy)
+						.addComponent(this.lblBodyHierarchy)
 						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								.addComponent(txtHierarchyFile, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnHierarchyLoad))
+								.addComponent(this.txtHierarchyFile, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(this.btnHierarchyLoad))
 								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(lblBaseAnimation)
+								.addComponent(this.lblBaseAnimation)
 								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-										.addComponent(txtBaseAnimation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnBaseAnimLoad))
+										.addComponent(this.txtBaseAnimation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(this.btnBaseAnimLoad))
 										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-										.addComponent(lblAnimations)
+										.addComponent(this.lblAnimations)
 										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
 										.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 												.addGroup(layout.createSequentialGroup()
-														.addComponent(btnAdd)
+														.addComponent(this.btnAdd)
 														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(btnRemove))
-														.addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+														.addComponent(this.btnRemove))
+														.addComponent(this.jScrollPane1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+														.addComponent(this.chkManual)
 														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
 														.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-																.addComponent(btnOK)
-																.addComponent(btnCancel))
+																.addComponent(this.btnOK)
+																.addComponent(this.btnCancel))
 																.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
-		pack();
+		this.pack();
 	}
 
 	/**
@@ -261,6 +265,6 @@ public class AnimationSelectorGUI extends JFrame {
 	 * @return True if the mode is manual. False automatic.
 	 */
 	public boolean isManual() {
-		return false;
+		return this.chkManual.isSelected();
 	}
 }
