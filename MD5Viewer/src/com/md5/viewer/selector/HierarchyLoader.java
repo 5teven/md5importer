@@ -13,7 +13,7 @@ import java.util.Scanner;
  * @author Yi Wang (Neakor)
  * @author Tim Poliquin (Weenahmen)
  * @version Creation date: 11-23-2008 23:19 EST
- * @version Modified date: 11-24-2008 22:46 EST
+ * @version Modified date: 11-26-2008 00:38 EST
  */
 public class HierarchyLoader {
 	/**
@@ -39,7 +39,9 @@ public class HierarchyLoader {
 			list.add(scanner.nextLine().trim());
 		}
 		String raw = file.getPath().replaceAll("%20", " ");
-		this.dir = raw.substring(0, raw.lastIndexOf("/") + 1);
+		String os = System.getProperty("os.name");
+		if(os.contains("Mac")) this.dir = raw.substring(0, raw.lastIndexOf("/") + 1);
+		else if(os.contains("Windows")) this.dir = raw.substring(0, raw.lastIndexOf("\\") + 1);
 		return list;
 	}
 	
