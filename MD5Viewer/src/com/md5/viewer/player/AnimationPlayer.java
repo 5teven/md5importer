@@ -2,6 +2,7 @@ package com.md5.viewer.player;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -11,6 +12,8 @@ import com.jme.input.KeyBindingManager;
 import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
+import com.jme.util.resource.ResourceLocatorTool;
+import com.jme.util.resource.SimpleResourceLocator;
 import com.md5.viewer.player.enumn.ECommand;
 import com.model.md5.controller.MD5Controller;
 import com.model.md5.importer.MD5Importer;
@@ -113,12 +116,17 @@ public class AnimationPlayer extends SimpleGame {
 	@Override
 	protected void simpleInitGame() {
 		try {
+			File file = new File(this.dir + this.hierarchy.get(0) + ".md5mesh");
+			URL url = file.toURI().toURL();
+			ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, new SimpleResourceLocator(url));
 			this.loadModelMesh();
 			this.loadAnimations();
 			this.setupController();
 			this.setupUtilityKey();
 			if(this.manual) this.setupManualKey();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
 		this.rootNode.updateGeometricState(0, true);
