@@ -158,7 +158,7 @@ public class AnimationPlayer extends SimpleGame {
 		if(this.keyBinding.isValidCommand(ECommand.IncrementAnimation.name(), false)) {
 			if(active != null) {
 				if(active == this.baseAnimation) this.incrementAnimation();
-				else if(active.getPercentage() >= 0.7f) this.incrementAnimation();
+				else if(active.getPercentage() >= 0.9f) this.incrementAnimation();
 			}
 		} else if(this.keyBinding.isValidCommand(ECommand.ResetAnimation.name(), false)) {
 			this.resetAnimation();
@@ -210,8 +210,13 @@ public class AnimationPlayer extends SimpleGame {
 	 */
 	private void incrementAnimation() {
 		this.controller.setRepeatType(Controller.RT_CLAMP);
-		this.controller.setFading(this.animations[this.index], 0.2f, false);
+		this.controller.setFading(this.animations[this.index], 0, false);
 		this.index++;
+		if(this.index == 2) { // XXX
+			float z = ((BoundingBox)((Spatial)this.modelMesh).getWorldBound()).zExtent;
+			System.out.println(z);
+			((Spatial)this.modelMesh).getLocalTranslation().addLocal(0, 0, 2.15f);
+		}
 		if(this.index >= this.animations.length) this.index = 0;
 	}
 
