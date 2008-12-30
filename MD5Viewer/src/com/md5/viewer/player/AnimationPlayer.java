@@ -12,6 +12,7 @@ import com.jme.input.KeyBindingManager;
 import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.BlendState;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
 import com.md5.viewer.player.enumn.ECommand;
@@ -256,6 +257,15 @@ public class AnimationPlayer extends SimpleGame {
 			this.modelMesh.attachDependent(this.importer.getModelNode());
 			this.importer.cleanup();
 		}
+		// Add blend state.
+		BlendState blend = this.display.getRenderer().createBlendState();
+		blend.setBlendEnabled(true);
+		blend.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+		blend.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+		blend.setTestEnabled(true);
+		blend.setTestFunction(BlendState.TestFunction.GreaterThan);
+		blend.setEnabled(true);
+		((Spatial)this.modelMesh).setRenderState(blend);
 		// Attach to root node.
 		this.rootNode.attachChild((Spatial)this.modelMesh);
 	}
