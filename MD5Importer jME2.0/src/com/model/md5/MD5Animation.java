@@ -16,15 +16,16 @@ import com.model.md5.interfaces.anim.IFrame;
 /**
  * <code>MD5Animation</code> is the final product of MD5 animation.
  * <p>
- * <code>MD5Animation</code> is added to a <code>IMD5Controller</code> for
- * animating the skeletal <code>IMD5Node</code>.
+ * <code>MD5Animation</code> is added to a <code>IMD5Controller</code>
+ * for animating the skeletal <code>IMD5Node</code>.
  * <p>
- * <code>MD5Animation</code> provides the cloning functionality so that users
- * can fast clone animations that may be used by multiple <code>IMD5Node</code>.
- * The newly cloned <code>MD5Animation</code> is initialized and ready to be used.
+ * <code>MD5Animation</code> provides the cloning functionality so that
+ * users can fast clone animations that may be used by multiple
+ * <code>IMD5Node</code>. The newly cloned <code>MD5Animation</code> is
+ * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-19-2008 17:38 EST
+ * @version Modified date: 02-05-2009 11:10 EST
  */
 public class MD5Animation implements Serializable, IMD5Animation {
 	/**
@@ -231,6 +232,11 @@ public class MD5Animation implements Serializable, IMD5Animation {
 	}
 
 	@Override
+	public int getPreviousIndex() {
+		return this.prevFrame;
+	}
+
+	@Override
 	public float getPreviousTime() {
 		if(this.frameTimes != null) return this.frameTimes[this.prevFrame];
 		return ((float)this.prevFrame) * (1.0f/this.frameRate);
@@ -239,6 +245,11 @@ public class MD5Animation implements Serializable, IMD5Animation {
 	@Override
 	public IFrame getNextFrame() {
 		return this.frames[this.nextFrame];
+	}
+
+	@Override
+	public int getNextIndex() {
+		return this.nextFrame;
 	}
 
 	@Override

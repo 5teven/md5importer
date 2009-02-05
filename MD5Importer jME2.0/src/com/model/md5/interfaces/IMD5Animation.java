@@ -8,7 +8,7 @@ import com.model.md5.interfaces.anim.IFrame;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:46 EST
- * @version Modified date: 11-19-2008 17:36 EST
+ * @version Modified date: 02-05-2009 11:09 EST
  */
 public interface IMD5Animation extends Savable {
 
@@ -51,6 +51,12 @@ public interface IMD5Animation extends Savable {
 	public IFrame getPreviousFrame();
 	
 	/**
+	 * Retrieve the previous frame index number.
+	 * @return The <code>Integer</code> index number.
+	 */
+	public int getPreviousIndex();
+	
+	/**
 	 * Retrieve the starting time of the previous frame.
 	 * @return The <code>Float</code> starting time.
 	 */
@@ -61,6 +67,12 @@ public interface IMD5Animation extends Savable {
 	 * @return The next <code>IFrame</code>.
 	 */
 	public IFrame getNextFrame();
+	
+	/**
+	 * Retrieve the next frame index number.
+	 * @return The <code>Integer</code> index number.
+	 */
+	public int getNextIndex();
 	
 	/**
 	 * Retrieve the starting time of the next frame.
