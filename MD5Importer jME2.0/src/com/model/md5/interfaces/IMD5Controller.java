@@ -11,9 +11,15 @@ import com.jme.util.export.Savable;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 23:01 EST
- * @version Modified date: 11-19-2008 15:44 EST
+ * @version Modified date: 02-17-2009 11:13 EST
  */
 public interface IMD5Controller extends Savable {
+	
+	/**
+	 * Update the controller.
+	 * @param interpolation The <code>Float</code> frame interpolation.
+	 */
+	public void update(float interpolation);
 
 	/**
 	 * Add a new animation to this controller. The new animation set it to be
@@ -28,7 +34,7 @@ public interface IMD5Controller extends Savable {
 	 * @param duration The <code>Float</code> fading duration in seconds.
 	 * @param scale True if fading duration should scale with controller speed.
 	 */
-	public void setFading(String name, float duration, boolean scale);
+	public void fadeTo(String name, float duration, boolean scale);
 	
 	/**
 	 * Fade from the current active animation to the given animation.
@@ -36,7 +42,7 @@ public interface IMD5Controller extends Savable {
 	 * @param duration The <code>Float</code> fading duration in seconds.
 	 * @param scale True if fading duration should scale with controller speed.
 	 */
-	public void setFading(IMD5Animation animation, float duration, boolean scale);
+	public void fadeTo(IMD5Animation animation, float duration, boolean scale);
 	
 	/**
 	 * Set the repeat type of the animations on this controller.

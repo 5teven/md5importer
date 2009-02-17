@@ -226,19 +226,19 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	public void addAnimation(IMD5Animation animation) {
 		if(this.validateAnimation(animation)) {
 			this.animations.put(animation.getName(), animation);
-			if(this.activeAnimation == null) this.setFading(animation, 0, true);
+			if(this.activeAnimation == null) this.fadeTo(animation, 0, true);
 		}
 		else throw new InvalidAnimationException();
 	}
 
 	@Override
-	public void setFading(String name, float duration, boolean scale) {
+	public void fadeTo(String name, float duration, boolean scale) {
 		this.setActiveAnimation(this.animations.get(name));
 		this.enabledFading(duration, scale);
 	}
 
 	@Override
-	public void setFading(IMD5Animation animation, float duration, boolean scale) {
+	public void fadeTo(IMD5Animation animation, float duration, boolean scale) {
 		this.setActiveAnimation(animation);
 		this.enabledFading(duration, scale);
 	}
