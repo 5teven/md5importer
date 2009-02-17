@@ -1,8 +1,8 @@
 package com.model.md5.controller;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -29,7 +29,7 @@ import com.model.md5.interfaces.mesh.IJoint;
  * updates the skeleton with interpolated translation and orientation values.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-18-2008 22:03 EST
+ * @version Modified date: 02-17-2009 11:27 EST
  */
 public class MD5Controller extends Controller implements IMD5Controller {
 	/**
@@ -40,6 +40,14 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 * The <code>Logger</code> instance.
 	 */
 	private static final Logger logger = Logger.getLogger(MD5Controller.class.getName());
+	/**
+	 * The update <code>Object</code> lock.
+	 */
+	private final Object updateLock;
+	/**
+	 * The modify <code>Object</code> lock.
+	 */
+	private final Object modifyLock;
 	/**
 	 * The <code>Float</code> total time elapsed in the current cycle.
 	 */
@@ -97,9 +105,7 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 * Constructor of <code>MD5Controller</code>.
 	 */
 	public MD5Controller(){
-		super();
-		this.translation = new Vector3f();
-		this.orientation = new Quaternion();
+		this(null);
 	}
 
 	/**
@@ -108,6 +114,8 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 */
 	public MD5Controller(IMD5Node node) {
 		this.node = node;
+		this.updateLock = new Object();
+		this.modifyLock = new Object();
 		this.joints = this.node.getJoints();
 		this.animations = new HashMap<String, IMD5Animation>();
 		this.translation = new Vector3f();
@@ -118,11 +126,13 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	public void update(float time) {
 		if(this.activeAnimation == null) return;
 		this.updateTime(time);
-		if(!this.fading) {
-			this.activeAnimation.update(time, this.getRepeatType(), this.getSpeed());
-			this.updateJoints();
+		synchronized(this.updateLock) {
+			if(!this.fading) {
+				this.activeAnimation.update(time, this.getRepeatType(), this.getSpeed());
+				this.updateJoints();
+			}
+			else this.updateFading();
 		}
-		else this.updateFading();
 	}
 
 	/**
@@ -225,10 +235,24 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	@Override
 	public void addAnimation(IMD5Animation animation) {
 		if(this.validateAnimation(animation)) {
-			this.animations.put(animation.getName(), animation);
-			if(this.activeAnimation == null) this.fadeTo(animation, 0, true);
+			synchronized(this.modifyLock) {
+				this.animations.put(animation.getName(), animation);
+				if(this.activeAnimation == null) this.fadeTo(animation, 0, true);
+			}
 		}
 		else throw new InvalidAnimationException();
+	}
+
+	@Override
+	public void removeAnimation(IMD5Animation animation) {
+		synchronized(this.modifyLock) {
+			this.animations.remove(animation.getName());
+			if(animation == this.activeAnimation) {
+				synchronized(this.updateLock) {
+					this.activeAnimation = null;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -248,22 +272,24 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 * @param duration The <code>Float</code> fading duration in seconds.
 	 */
 	private void enabledFading(float duration, boolean scale) {
-		this.activeAnimation.reset();
-		this.fading = true;
-		this.duration = FastMath.abs(duration);
-		this.scale = scale;
-		this.time = 0;
-		if(this.translations == null && this.orientations == null) {
-			this.translations = new Vector3f[this.joints.length];
-			this.orientations = new Quaternion[this.joints.length];
-			for(int i = 0; i < this.joints.length; i++) {
-				this.translations[i] = this.joints[i].getTranslation().clone();
-				this.orientations[i] = this.joints[i].getOrientation().clone();
-			}
-		} else {
-			for(int i = 0; i < this.joints.length; i++) {
-				this.translations[i].set(this.joints[i].getTranslation());
-				this.orientations[i].set(this.joints[i].getOrientation());
+		synchronized(this.updateLock) {
+			this.activeAnimation.reset();
+			this.fading = true;
+			this.duration = FastMath.abs(duration);
+			this.scale = scale;
+			this.time = 0;
+			if(this.translations == null && this.orientations == null) {
+				this.translations = new Vector3f[this.joints.length];
+				this.orientations = new Quaternion[this.joints.length];
+				for(int i = 0; i < this.joints.length; i++) {
+					this.translations[i] = this.joints[i].getTranslation().clone();
+					this.orientations[i] = this.joints[i].getOrientation().clone();
+				}
+			} else {
+				for(int i = 0; i < this.joints.length; i++) {
+					this.translations[i].set(this.joints[i].getTranslation());
+					this.orientations[i].set(this.joints[i].getOrientation());
+				}
 			}
 		}
 	}
@@ -273,9 +299,11 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 * @param animation The <code>IMD5Animation</code> to be set.
 	 */
 	private void setActiveAnimation(IMD5Animation animation) {
-		if(animation == null) MD5Controller.logger.info("Given animation is null.");
-		else if(!this.animations.containsValue(animation)) this.addAnimation(animation);
-		this.activeAnimation = animation;
+		synchronized(this.updateLock) {
+			if(animation == null) MD5Controller.logger.info("Given animation is null.");
+			else if(!this.animations.containsValue(animation)) this.addAnimation(animation);
+			this.activeAnimation = animation;
+		}
 	}
 
 	@Override
@@ -284,8 +312,8 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	}
 
 	@Override
-	public Iterator<IMD5Animation> getAnimations() {
-		return this.animations.values().iterator();
+	public Collection<IMD5Animation> getAnimations() {
+		return this.animations.values();
 	}
 
 	@Override

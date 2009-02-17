@@ -1,6 +1,6 @@
 package com.model.md5.interfaces;
 
-import java.util.Iterator;
+import java.util.Collection;
 
 import com.jme.util.export.Savable;
 
@@ -11,7 +11,7 @@ import com.jme.util.export.Savable;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 23:01 EST
- * @version Modified date: 02-17-2009 11:13 EST
+ * @version Modified date: 02-17-2009 11:22 EST
  */
 public interface IMD5Controller extends Savable {
 	
@@ -27,6 +27,12 @@ public interface IMD5Controller extends Savable {
 	 * @param animation The <code>IMD5Animation</code> to be added.
 	 */
 	public void addAnimation(IMD5Animation animation);
+	
+	/**
+	 * Remove the given animation.
+	 * @param animation The <code>IMD5Animation</code> to be removed.
+	 */
+	public void removeAnimation(IMD5Animation animation);
 	
 	/**
 	 * Fade from the current active animation to the given animation.
@@ -69,8 +75,8 @@ public interface IMD5Controller extends Savable {
 	public IMD5Animation getActiveAnimation();
 	
 	/**
-	 * Retrieve the iterator of the maintained animations.
-	 * @return The <code>Iterator</code> of <code>IMD5Animation</code>.
+	 * Retrieve all the maintained animations.
+	 * @return The <code>Collection</code> of <code>IMD5Animation</code>.
 	 */
-	public Iterator<IMD5Animation> getAnimations();
+	public Collection<IMD5Animation> getAnimations();
 }
