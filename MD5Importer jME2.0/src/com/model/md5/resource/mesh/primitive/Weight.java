@@ -14,9 +14,9 @@ import com.model.md5.interfaces.mesh.primitive.IWeight;
 /**
  * <code>Weight</code> defines the concrete implementation of a weight.
  * <p>
- * <code>Weight</code> should not be cloned directly. The cloning process of a
- * <code>Weight</code> should be initiated by the cloning process of the parent
- * <code>IMesh</code>.
+ * <code>Weight</code> should not be cloned directly. The cloning
+ * process of a <code>Weight</code> should be initiated by the cloning
+ * process of the parent <code>IMesh</code>.
  * <p>
  * This class is used internally by <code>MD5Importer</code> only.
  * 

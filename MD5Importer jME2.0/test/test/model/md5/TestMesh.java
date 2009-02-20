@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.model.md5.MD5Node;
-import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Node;
 
 
@@ -21,21 +20,21 @@ public class TestMesh extends Test{
 	protected IMD5Node loadModel() {
 		URL md5mesh = TestMesh.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
 		try {
-			MD5Importer.getInstance().loadMesh(md5mesh, "ModelNode");
+			this.importer.loadMesh(md5mesh, "ModelNode");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		IMD5Node body = MD5Importer.getInstance().getModelNode();
-		MD5Importer.getInstance().cleanup();
+		IMD5Node body = this.importer.getMD5Node();
+		this.importer.cleanup();
 		URL head = TestMesh.class.getClassLoader().getResource("test/model/md5/data/sarge.md5mesh");
 		try {
-			MD5Importer.getInstance().loadMesh(head, "Head");
+			this.importer.loadMesh(head, "Head");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		body.attachChild(MD5Importer.getInstance().getModelNode(), "Shoulders");
+		body.attachChild(this.importer.getMD5Node(), "Shoulders");
 		body.flagUpdate();
-		MD5Importer.getInstance().cleanup();
+		this.importer.cleanup();
 		return body;
 	}
 

@@ -10,7 +10,13 @@ import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Node;
 
 public abstract class Test extends SimpleGame{
+	
+	protected final MD5Importer importer;
 
+	protected Test() {
+		this.importer = new MD5Importer();
+	}
+	
 	@Override
 	protected void simpleInitGame() {
 		this.overrideTextureKey();
@@ -18,7 +24,7 @@ public abstract class Test extends SimpleGame{
 		node.setLocalTranslation(0, -40, -300);
 		this.rootNode.attachChild(node);
 		this.setupGame();
-		MD5Importer.getInstance().cleanup();
+		this.importer.cleanup();
 	}
 	
 	protected void overrideTextureKey() {

@@ -6,9 +6,10 @@ import com.jme.math.Vector3f;
 import com.jme.util.export.Savable;
 
 /**
- * <code>IJoint</code> defines the interface of a joint in a skeleton system.
- * It maintains its own space position that is then translated into vertex
- * positions for all vertices that are affected by this <code>IJoint</code>.
+ * <code>IJoint</code> defines the interface of a joint in a skeleton
+ * system. It maintains its own space position that is then translated
+ * into vertex positions for all vertices that are affected by this
+ * <code>IJoint</code>.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 19:59 EST

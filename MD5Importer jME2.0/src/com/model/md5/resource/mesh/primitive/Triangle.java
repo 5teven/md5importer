@@ -13,13 +13,13 @@ import com.model.md5.interfaces.mesh.primitive.ITriangle;
 import com.model.md5.interfaces.mesh.primitive.IVertex;
 
 /**
- * <code>Triangle</code> defines the concrete implementation of a triangle.
- * It is responsible for calculating the normal vector for each
- * <code>Vertex</code>.
+ * <code>Triangle</code> defines the concrete implementation of a
+ * triangle. It is responsible for calculating the normal vector
+ * for each <code>IVertex</code>.
  * <p>
- * <code>Triangle</code> cannot be cloned directly. The cloning process of a
- * <code>Triangle</code> can only be initiated by the cloning process of the
- * parent <code>IMesh</code>.
+ * <code>Triangle</code> cannot be cloned directly. The cloning
+ * process of a <code>Triangle</code> can only be initiated by the
+ * cloning process of the parent <code>IMesh</code>.
  * <p>
  * This class is used internally by <code>MD5Importer</code> only.
  * 

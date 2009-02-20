@@ -5,8 +5,8 @@ import com.jme.util.export.Savable;
 import com.model.md5.interfaces.mesh.IJoint;
 
 /**
- * <code>IWeight</code> defines the interface of a weight that affects a
- * single joint in the mesh based a weight value and position.
+ * <code>IWeight</code> defines the interface of a weight that affects
+ * a single joint in the mesh based a weight value and position.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 21:39 EST

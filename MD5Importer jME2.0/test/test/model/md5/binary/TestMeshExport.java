@@ -12,7 +12,6 @@ import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.scene.Spatial;
 import com.jme.util.export.binary.BinaryExporter;
-import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Node;
 
 /**
@@ -37,19 +36,19 @@ public class TestMeshExport extends Test {
 	protected IMD5Node loadModel() {
 		URL md5mesh = TestMesh.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
 		try {
-			MD5Importer.getInstance().loadMesh(md5mesh, "ModelNode");
+			this.importer.loadMesh(md5mesh, "ModelNode");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.bodyNode = MD5Importer.getInstance().getModelNode();
-		MD5Importer.getInstance().cleanup();
+		this.bodyNode = this.importer.getMD5Node();
+		this.importer.cleanup();
 		URL head = TestMesh.class.getClassLoader().getResource("test/model/md5/data/sarge.md5mesh");
 		try {
-			MD5Importer.getInstance().loadMesh(head, "Head");
+			this.importer.loadMesh(head, "Head");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.headNode = MD5Importer.getInstance().getModelNode();
+		this.headNode = this.importer.getMD5Node();
 		this.rootNode.attachChild((Spatial)this.headNode);
 		return this.bodyNode;
 	}

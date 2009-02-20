@@ -14,12 +14,12 @@ import com.jme.util.export.OutputCapsule;
 import com.model.md5.interfaces.mesh.IJoint;
 
 /**
- * <code>Joint</code> defines the concrete implementation of a joint in the
- * skeleton system of a model.
+ * <code>Joint</code> defines the concrete implementation of a joint
+ * in the skeleton system of a model.
  * <p>
- * <code>Joint</code> cannot be cloned directly. The cloning process of a
- * <code>Joint</code> can only be initiated by the cloning process of the
- * parent <code>IModelNode</code>.
+ * <code>Joint</code> cannot be cloned directly. The cloning process
+ * of a <code>Joint</code> can only be initiated by the cloning
+ * process of the parent <code>IModelNode</code>.
  * <p>
  * This class is used internally by <code>MD5Importer</code> only.
  * 

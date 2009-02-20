@@ -4,11 +4,12 @@ import com.jme.util.export.Savable;
 import com.model.md5.interfaces.anim.IFrame;
 
 /**
- * <code>IMD5Animation</code> defines the interface of a completed loaded MD5 animation.
+ * <code>IMD5Animation</code> defines the interface of a completed
+ * loaded MD5 animation.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:46 EST
- * @version Modified date: 02-05-2009 11:09 EST
+ * @version Modified date: 02-19-2009 21:32 EST
  */
 public interface IMD5Animation extends Savable {
 
@@ -27,8 +28,14 @@ public interface IMD5Animation extends Savable {
 	public void addAnimation(IMD5Animation animation);
 	
 	/**
+	 * Remove the given animation.
+	 * @param animation The child <code>IMD5Animation</code> to be removed.
+	 */
+	public void removeAnimation(IMD5Animation animation);
+	
+	/**
 	 * Retrieve the total time of a complete cycle of this animation.
-	 * @return The <code>Float</code> compelte cycle time.
+	 * @return The <code>Float</code> complete cycle time.
 	 */
 	public float getAnimationTime();
 	

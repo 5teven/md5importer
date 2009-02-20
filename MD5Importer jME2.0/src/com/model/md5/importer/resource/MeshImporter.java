@@ -5,10 +5,12 @@ import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jme.image.Texture;
+import com.jme.image.Texture.MagnificationFilter;
+import com.jme.image.Texture.MinificationFilter;
 import com.jme.math.Vector3f;
 import com.model.md5.MD5Node;
-import com.model.md5.exception.InvalidVersionException;
-import com.model.md5.importer.MD5Importer;
+import com.model.md5.interfaces.IMD5Node;
 import com.model.md5.interfaces.mesh.IJoint;
 import com.model.md5.interfaces.mesh.IMesh;
 import com.model.md5.interfaces.mesh.primitive.ITriangle;
@@ -21,15 +23,33 @@ import com.model.md5.resource.mesh.primitive.Vertex;
 import com.model.md5.resource.mesh.primitive.Weight;
 
 /**
- * <code>MeshImporter</code> is responsible for importing MD5Mesh resources and
- * constructing the final <code>IMD5Node</code> instance.
+ * <code>MeshImporter</code> is responsible for importing MD5Mesh
+ * resources and constructing the final <code>IMD5Node</code>
+ * instance.
  * <p>
- * <code>MeshImporter</code> is used by <code>MD5Importer</code> internally only.
+ * <code>MeshImporter</code> is used by <code>MD5Importer</code>
+ * internally only.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-19-2008 17:13 EST
+ * @version Modified date: 02-19-2009 23:06 EST
  */
-public class MeshImporter extends Importer {
+public class MeshImporter extends ResourceImporter<IMD5Node> {
+	/**
+	 * The <code>Integer</code> anisotropic level value.
+	 */
+	private int anisotropic;
+	/**
+	 * The <code>MinificationFilter</code> enumeration.
+	 */
+	private MinificationFilter miniFilter;
+	/**
+	 * The <code>MagnificationFilter</code> enumeration.
+	 */
+	private MagnificationFilter magFilter;
+	/**
+	 * The flag indicates if oriented bounding should be used.
+	 */
+	private boolean orientedBounding;
 	/**
 	 * The array of <code>IJoint</code> that form the skeleton.
 	 */
@@ -58,30 +78,22 @@ public class MeshImporter extends Importer {
 	 * The <code>List</code> of weight <code>Integer</code> indices array.
 	 */
 	private List<int[]> weightIndices;
-	/**
-	 * The final <code>ModelNode</code> instance.
-	 */
-	private MD5Node node;
-
+	
 	/**
 	 * Constructor of <code>MeshImporter</code>.
-	 * @param reader The <code>StreamTokenizer</code> instance setup for reading file.
 	 */
-	public MeshImporter(StreamTokenizer reader) {
-		super(reader);
+	public MeshImporter() {
+		super();
 		this.weightIndices = new ArrayList<int[]>();
+		this.miniFilter = MinificationFilter.Trilinear;
+		this.magFilter = MagnificationFilter.Bilinear;
+		this.anisotropic = 16;
 	}
 
-	/**
-	 * Load the md5mesh file and construct the final <code>ModelNode</code>.
-	 * @param name The name of the loaded <code>ModelNode</code>.
-	 * @return The loaded <code>ModelNode</code> instance.
-	 * @throws IOException Thrown when errors occurred during file reading.
-	 */
-	public MD5Node loadMesh(String name) throws IOException {
+	@Override
+	protected IMD5Node load(String name) throws IOException {
 		this.processSkin();
-		this.constructSkin(name);
-		return this.node;
+		return this.constructSkin(name);
 	}
 
 	/**
@@ -96,7 +108,9 @@ public class MeshImporter extends Importer {
 			if(sval != null) {
 				if(sval.equals("MD5Version")) {
 					this.reader.nextToken();
-					if(this.reader.nval != MD5Importer.version) throw new InvalidVersionException((int)this.reader.nval);
+					if(this.reader.nval != MeshImporter.version) {
+						throw new IllegalArgumentException("Invalid MD5 format version: " + this.reader.nval);
+					}
 				} else if(sval.equals("numJoints")) {
 					this.reader.nextToken();
 					this.joints = new IJoint[(int)this.reader.nval];
@@ -191,7 +205,8 @@ public class MeshImporter extends Importer {
 			vertex.setWeights(weights);
 		}
 		// Construct the mesh.
-		this.meshes[meshIndex] = new Mesh(this.texture, this.vertices, this.triangles, this.weights);
+		this.meshes[meshIndex] = new Mesh(this.texture, this.vertices, this.triangles, this.weights, this.anisotropic,
+				this.miniFilter, this.magFilter, this.orientedBounding);
 	}
 
 	/**
@@ -294,21 +309,96 @@ public class MeshImporter extends Importer {
 	/**
 	 * Construct the skin based on information read in.
 	 * @param The <code>String</code> name for the node.
+	 * @return The <code>IMD5Node</code> instance.
 	 */
-	private void constructSkin(String name) {
+	private IMD5Node constructSkin(String name) {
 		// Process the joints.
 		for(int i = this.joints.length - 1; i >= 0; i--) {
 			this.joints[i].processTransform();
 		}
 		for(int i = 0; i < this.joints.length; i++) {
 			if(this.joints[i].getParent() == null) {
-				this.joints[i].getOrientation().set(MD5Importer.base.mult(this.joints[i].getOrientation()));
+				this.joints[i].getOrientation().set(MeshImporter.base.mult(this.joints[i].getOrientation()));
 			}
 		}
 		// Construct the node.
-		this.node = new MD5Node(name, this.joints, this.meshes);
-		this.node.initialize();
+		MD5Node node = new MD5Node(name, this.joints, this.meshes);
+		node.initialize();
+		return node;
+	}
+	
+	/**
+	 * Set the texture anisotropic level.
+	 * @param value The <code>Integer</code> anisotropic level value.
+	 */
+	public void setAnisotropic(int aniso) {
+		if(aniso >= 0) this.anisotropic = aniso;
+	}
+
+	/**
+	 * Set the minification (MM) <code>Texture</code> filter.
+	 * @param filter The minification (MM) <code>Texture</code> filter.
+	 */
+	public void setMiniFilter(Texture.MinificationFilter filter) {
+		this.miniFilter = filter;
+	}
+	
+	/**
+	 * Set the magnification (FM) <code>Texture</code> filter.
+	 * @param filter The magnification (FM) <code>Texture</code> filter.
+	 */
+	public void setMagFilter(Texture.MagnificationFilter filter) {
+		this.magFilter = filter;
+	}
+	
+	/**
+	 * Set if oriented bounding should be used for the meshes.
+	 * @param orientedBounding True if oriented bounding should be used. False otherwise.
+	 */
+	public void setOrientedBounding(boolean orientedBounding) {
+		this.orientedBounding = orientedBounding;
+	}
+	
+	/**
+	 * Retrieve the anisotropic level.
+	 * @return The <code>Integer</code> anisotropic level.
+	 */
+	public int getAnisotropic() {
+		return this.anisotropic;
+	}
+	
+	/**
+	 * Retrieve the minification (MM) texture filter.
+	 * @return The <code>MinificationFilter</code> enumeration.
+	 */
+	public MinificationFilter getMiniFilter() {
+		return this.miniFilter;
+	}
+
+	/**
+	 * Retrieve the magnification (FM) texture filter.
+	 * @return The <code>MagnificationFilter</code> enumeration.
+	 */
+	public MagnificationFilter getMagFilter() {
+		return this.magFilter;
+	}
+	
+	/**
+	 * Check if oriented bounding should be used.
+	 * @return True if oriented bounding should be used. False otherwise.
+	 */
+	public boolean isOriented() {
+		return this.orientedBounding;
+	}
+
+	@Override
+	public void cleanup() {
 		this.joints = null;
 		this.meshes = null;
+		this.texture = null;
+		this.vertices = null;
+		this.triangles = null;
+		this.weights = null;
+		this.weightIndices.clear();
 	}
 }

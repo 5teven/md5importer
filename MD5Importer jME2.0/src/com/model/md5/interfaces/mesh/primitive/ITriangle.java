@@ -3,8 +3,8 @@ package com.model.md5.interfaces.mesh.primitive;
 import com.jme.util.export.Savable;
 
 /**
- * <code>ITriangle</code> defines a triangle of a mesh. It is composed of
- * three vertices.
+ * <code>ITriangle</code> defines a triangle of a mesh. It is composed
+ * of three vertices.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 20:32 EST

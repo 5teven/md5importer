@@ -5,9 +5,9 @@ import com.jme.math.Vector3f;
 import com.jme.util.export.Savable;
 
 /**
- * <code>IFrame</code> defines the interface of a single frame of a skeletal
- * animation. It maintains the translation and orientation of the entire
- * skeleton at a particular frame in the animation.
+ * <code>IFrame</code> defines the interface of a single frame of a
+ * skeletal animation. It maintains the translation and orientation
+ * of the entire skeleton at a particular frame in the animation.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:02 EST

@@ -16,9 +16,9 @@ import com.model.md5.interfaces.mesh.primitive.IWeight;
 /**
  * <code>Vertex</code> defines the concrete implementation of a vertex.
  * <p>
- * <code>Vertex</code> cannot be cloned directly. The cloning process of
- * <code>Vertex</code> can only be initiated by the cloning process of the
- * parent <code>IMesh</code>.
+ * <code>Vertex</code> cannot be cloned directly. The cloning process
+ * of <code>Vertex</code> can only be initiated by the cloning process
+ * of the parent <code>IMesh</code>.
  * <p>
  * This class is used internally by <code>MD5Importer</code> only.
  * 

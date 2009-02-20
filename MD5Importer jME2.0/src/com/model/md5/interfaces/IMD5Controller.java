@@ -5,9 +5,9 @@ import java.util.Collection;
 import com.jme.util.export.Savable;
 
 /**
- * <code>IMD5Controller</code> defines the interface of a controller unit
- * that is responsible for controlling the <code>IMD5Node</code> with its
- * <code>IMD5Animation</code>.
+ * <code>IMD5Controller</code> defines the interface of a controller
+ * unit that is responsible for controlling a single instance of
+ * <code>IMD5Node</code> with its <code>IMD5Animation</code>.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 23:01 EST
@@ -79,4 +79,10 @@ public interface IMD5Controller extends Savable {
 	 * @return The <code>Collection</code> of <code>IMD5Animation</code>.
 	 */
 	public Collection<IMD5Animation> getAnimations();
+	
+	/**
+	 * Retrieve the current repeat type.
+	 * @return The <code>Integer</code> repeat type.
+	 */
+	public int getRepeatType();
 }

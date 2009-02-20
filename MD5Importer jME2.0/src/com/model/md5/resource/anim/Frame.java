@@ -16,9 +16,9 @@ import com.model.md5.interfaces.anim.IFrame;
 /**
  * <code>Frame</code> defines the concrete implementation of a frame.
  * <p>
- * <code>Frame</code> should not be cloned directly. The cloning process of a
- * <code>Frame</code> should be initiated by the cloning process of the parent
- * <code>IMD5Animation</code>.
+ * <code>Frame</code> should not be cloned directly. The cloning
+ * process of a <code>Frame</code> should be initiated by the cloning
+ * process of the parent* <code>IMD5Animation</code>.
  * <p>
  * This class is used internally by <code>MD5Importer</code> only.
  * 

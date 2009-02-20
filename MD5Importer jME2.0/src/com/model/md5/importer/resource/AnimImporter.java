@@ -5,24 +5,23 @@ import java.io.StreamTokenizer;
 import java.util.BitSet;
 
 import com.model.md5.MD5Animation;
-import com.model.md5.exception.InvalidVersionException;
-import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Animation;
-import com.model.md5.interfaces.anim.IBaseFrame;
 import com.model.md5.interfaces.anim.IFrame;
 import com.model.md5.resource.anim.BaseFrame;
 import com.model.md5.resource.anim.Frame;
 
 /**
- * <code>AnimImporter</code> is responsible for importing MD5Anim resources and
- * constructing the final <code>IMD5Animation</code> instance.
+ * <code>AnimImporter</code> is responsible for importing MD5Anim
+ * resources and constructing the final <code>IMD5Animation</code>
+ * instance.
  * <p>
- * <code>AnimImporter</code> is used by <code>MD5Importer</code> internally only.
+ * <code>AnimImporter</code> is used by <code>MD5Importer</code>
+ * internally only.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-18-2008 00:21 EST
+ * @version Modified date: 02-19-2009 22:45 EST
  */
-public class AnimImporter extends Importer {
+public class AnimImporter extends ResourceImporter<IMD5Animation> {
 	/**
 	 * The frame rate of the <code>JointAnimation</code>.
 	 */
@@ -41,36 +40,25 @@ public class AnimImporter extends Importer {
 	 */
 	private BitSet frameflags;
 	/**
-	 * The base <code>IFrame</code> of the animation.
+	 * The base <code>BaseFrame</code> of the animation.
 	 */
-	private IBaseFrame baseframe;
+	private BaseFrame baseframe;
 	/**
 	 * The array of <code>IFrame</code> for the animation.
 	 */
 	private IFrame[] frames;
-	/**
-	 * The final <code>IMD5Animation</code> instance.
-	 */
-	private IMD5Animation animation;
 
 	/**
 	 * Constructor of <code>AnimImporter</code>.
-	 * @param reader The <code>StreamTokenizer</code> instance setup for reading file.
 	 */
-	public AnimImporter(StreamTokenizer reader) {
-		super(reader);
+	public AnimImporter() {
+		super();
 	}
 
-	/**
-	 * Read the md5anim file and construct the final MD5 animation.
-	 * @param name The name of the loaded <code>JointAnimation</code>.
-	 * @return The loaded <code>IMD5Animation</code> instance.
-	 * @throws IOException Thrown when errors occurred during file reading.
-	 */
-	public IMD5Animation loadAnim(String name) throws IOException {
+	@Override
+	protected IMD5Animation load(String name) throws IOException {
 		this.processAnim();
-		this.constructAnimation(name);
-		return this.animation;
+		return this.constructAnimation(name);
 	}
 
 	/**
@@ -84,7 +72,9 @@ public class AnimImporter extends Importer {
 			if(sval != null) {
 				if(sval.equals("MD5Version")) {
 					this.reader.nextToken();
-					if(this.reader.nval != MD5Importer.version) throw new InvalidVersionException((int)this.reader.nval);
+					if(this.reader.nval != AnimImporter.version) {
+						throw new IllegalArgumentException("Invalid MD5 format version: " + this.reader.nval);
+					}
 				} else if(sval.equals("numFrames")) {
 					this.reader.nextToken();
 					this.frames = new Frame[(int)this.reader.nval];
@@ -170,7 +160,7 @@ public class AnimImporter extends Importer {
 		}
 		for(int i = 0 ; i < this.parentHierarchy.length; i++) {
 			if(this.baseframe.getParent(i) < 0) {
-				this.baseframe.getOrientation(i).set(MD5Importer.base.mult(this.baseframe.getOrientation(i)));
+				this.baseframe.getOrientation(i).set(AnimImporter.base.mult(this.baseframe.getOrientation(i)));
 			}
 		}
 	}
@@ -210,9 +200,15 @@ public class AnimImporter extends Importer {
 	/**
 	 * Construct <code>JointAnimation</code> based on information read in.
 	 * @param name The name of the loaded <code>JointAnimation</code>.
+	 * @return The <code>IMD5Animation</code> instance.
 	 */
-	private void constructAnimation(String name) {
-		this.animation = new MD5Animation(name, this.idHierarchy, this.frames, this.frameRate);
+	private IMD5Animation constructAnimation(String name) {
+		return new MD5Animation(name, this.idHierarchy, this.frames, this.frameRate);
+	}
+	
+	@Override
+	public void cleanup() {
+		this.frameRate = 0;
 		this.idHierarchy = null;
 		this.parentHierarchy = null;
 		this.frameflags = null;

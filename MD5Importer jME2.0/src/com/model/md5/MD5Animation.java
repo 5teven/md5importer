@@ -19,13 +19,13 @@ import com.model.md5.interfaces.anim.IFrame;
  * <code>MD5Animation</code> is added to a <code>IMD5Controller</code>
  * for animating the skeletal <code>IMD5Node</code>.
  * <p>
- * <code>MD5Animation</code> provides the cloning functionality so that
- * users can fast clone animations that may be used by multiple
- * <code>IMD5Node</code>. The newly cloned <code>MD5Animation</code> is
- * initialized and ready to be used.
+ * <code>MD5Animation</code> provides the cloning functionality so
+ * that users can fast clone animations that may be used by multiple
+ * <code>IMD5Node</code>. The newly cloned <code>MD5Animation</code>
+ * is initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-05-2009 11:10 EST
+ * @version Modified date: 02-19-2009 21:36 EST
  */
 public class MD5Animation implements Serializable, IMD5Animation {
 	/**
@@ -208,7 +208,12 @@ public class MD5Animation implements Serializable, IMD5Animation {
 	@Override
 	public void addAnimation(IMD5Animation animation) {
 		if(this.animations == null) this.animations = new ArrayList<IMD5Animation>();
-		this.animations.add(animation);
+		if(!this.animations.contains(animation)) this.animations.add(animation);
+	}
+
+	@Override
+	public void removeAnimation(IMD5Animation animation) {
+		this.animations.remove(animation);
 	}
 
 	@Override
@@ -318,6 +323,25 @@ public class MD5Animation implements Serializable, IMD5Animation {
 		this.prevFrame = 0;
 		this.nextFrame = 1;
 		this.complete = false;
+	}
+	
+	@Override
+	public String toString() {
+		return this.name;
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.name.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if(object instanceof MD5Animation) {
+			MD5Animation given = (MD5Animation)object;
+			return given.name.equals(this.name);
+		}
+		return false;
 	}
 
 	@Override

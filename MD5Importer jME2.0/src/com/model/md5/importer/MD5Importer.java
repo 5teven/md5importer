@@ -1,75 +1,45 @@
 package com.model.md5.importer;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
 import java.net.URL;
-import java.util.logging.Logger;
 
 import com.jme.image.Texture;
-import com.jme.math.Quaternion;
+import com.jme.image.Texture.MagnificationFilter;
+import com.jme.image.Texture.MinificationFilter;
 import com.model.md5.controller.MD5Controller;
 import com.model.md5.importer.resource.AnimImporter;
 import com.model.md5.importer.resource.MeshImporter;
+import com.model.md5.importer.resource.ResourceImporter;
 import com.model.md5.interfaces.IMD5Animation;
 import com.model.md5.interfaces.IMD5Controller;
 import com.model.md5.interfaces.IMD5Node;
 
 /**
- * <code>MD5Importer</code> is a singleton utility class that provides a
- * mechanism to load models and animations of MD5 format.
+ * <code>MD5Importer</code> is a singleton utility class that provides
+ * a mechanism to load models and animations of MD5 format.
  * <p>
  * <code>MD5Importer</code> allows separate <code>Mesh</code> and
- * <code>IMD5Animation</code> loading process. However, it also provides
- * convenient methods for loading both MD5 resources at once.
+ * <code>IMD5Animation</code> loading process. However, it also
+ * provides convenient methods for loading both MD5 resources at once.
  * <p>
- * <code>MD5Importer</code> should be cleaned up after the loading process
- * is completed.
+ * <code>MD5Importer</code> should be cleaned up after the loading
+ * process is completed.
  * <P>
  * For details on MD5 format, please go to official MD5 wiki at
  * {@link}http://www.modwiki.net/wiki/MD5_(file_format).
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-18-2008 00:24 EST
+ * @version Modified date: 02-19-2008 22:17 EST
  */
 public class MD5Importer {
 	/**
-	 * The base orientation value used for translating coordinate systems.
+	 * The mesh <code>ResourceImporter</code> instance.
 	 */
-	public static final Quaternion base = new Quaternion(-0.5f, -0.5f, -0.5f, 0.5f);
+	private final ResourceImporter<IMD5Node> meshImporter;
 	/**
-	 * The current supported versions of MD5 format.
+	 * The animation <code>ResourceImporter</code> instance.
 	 */
-	public static final int version = 10;
-	/**
-	 * The <code>Logger</code> instance.
-	 */
-	private static final Logger logger = Logger.getLogger(MD5Importer.class.getName());
-	/**
-	 * The singleton <code>MD5Importer</code> instance.
-	 */
-	private static MD5Importer instance;
-	/**
-	 * The <code>MinificationFilter</code> enumeration.
-	 */
-	private Texture.MinificationFilter miniFilter = Texture.MinificationFilter.Trilinear;
-	/**
-	 * The <code>MagnificationFilter</code> enumeration.
-	 */
-	private Texture.MagnificationFilter magFilter = Texture.MagnificationFilter.Bilinear;
-	/**
-	 * The <code>Integer</code> anisotropic level value.
-	 */
-	private int anisotropic = 16;
-	/**
-	 * The flag indicates if oriented bounding should be used.
-	 */
-	private boolean orientedBounding;
-	/**
-	 * The <code>StreamTokenizer</code> instance.
-	 */
-	private StreamTokenizer reader;
+	private final ResourceImporter<IMD5Animation> animImporter;
 	/**
 	 * The <code>IMD5Node</code> instance.
 	 */
@@ -80,21 +50,12 @@ public class MD5Importer {
 	private IMD5Animation animation;
 
 	/**
-	 * Private default constructor of <code>MD5Importer</code>.
+	 * Constructor of <code>MD5Importer</code>.
 	 */
-	private MD5Importer() {}
-
-	/**
-	 * Retrieve the importer singleton instance.
-	 * @return The <code>MD5Importer</code> instance.
-	 */
-	public static MD5Importer getInstance() {
-		if(MD5Importer.instance == null) {
-			synchronized(MD5Importer.class) {
-				if(MD5Importer.instance == null) MD5Importer.instance = new MD5Importer();
-			}
-		}
-		return MD5Importer.instance;
+	public MD5Importer() {
+		super();
+		this.meshImporter = new MeshImporter();
+		this.animImporter = new AnimImporter();
 	}
 
 	/**
@@ -120,9 +81,7 @@ public class MD5Importer {
 	 * @throws IOException Thrown when errors occurred during file reading.
 	 */
 	public void loadMesh(URL md5mesh, String name) throws IOException {
-		this.setupReader(md5mesh.openStream());
-		MeshImporter meshImporter = new MeshImporter(this.reader);
-		this.node = meshImporter.loadMesh(name);
+		this.node = this.meshImporter.load(md5mesh, name);
 	}
 
 	/**
@@ -132,26 +91,7 @@ public class MD5Importer {
 	 * @throws IOException Thrown when errors occurred during file reading.
 	 */
 	public void loadAnim(URL md5anim, String name) throws IOException {
-		this.setupReader(md5anim.openStream());
-		AnimImporter animImporter = new AnimImporter(this.reader);
-		this.animation = animImporter.loadAnim(name);
-	}
-
-	/**
-	 * Setup the reader for file reading.
-	 * @param stream The <code>InputStream</code> of the file.
-	 */
-	private void setupReader(InputStream stream) {
-		InputStreamReader streamReader = new InputStreamReader(stream);
-		this.reader = new StreamTokenizer(streamReader);
-		this.reader.quoteChar('"');
-		this.reader.ordinaryChar('{');
-		this.reader.ordinaryChar('}');
-		this.reader.ordinaryChar('(');
-		this.reader.ordinaryChar(')');
-		this.reader.parseNumbers();
-		this.reader.slashSlashComments(true);
-		this.reader.eolIsSignificant(true);
+		this.animation = this.animImporter.load(md5anim, name);
 	}
 
 	/**
@@ -171,7 +111,7 @@ public class MD5Importer {
 	 * @param filter The minification (MM) <code>Texture</code> filter.
 	 */
 	public void setMiniFilter(Texture.MinificationFilter filter) {
-		this.miniFilter = filter;
+		((MeshImporter)this.meshImporter).setMiniFilter(filter);
 	}
 
 	/**
@@ -179,7 +119,7 @@ public class MD5Importer {
 	 * @param filter The magnification (FM) <code>Texture</code> filter.
 	 */
 	public void setMagFilter(Texture.MagnificationFilter filter) {
-		this.magFilter = filter;
+		((MeshImporter)this.meshImporter).setMagFilter(filter);
 	}
 
 	/**
@@ -187,8 +127,7 @@ public class MD5Importer {
 	 * @param value The <code>Integer</code> anisotropic level value.
 	 */
 	public void setAnisotropic(int aniso) {
-		if(aniso >= 0) this.anisotropic = aniso;
-		else MD5Importer.logger.info("Invalid Anisotropic filter level. Default 16 used.");
+		((MeshImporter)this.meshImporter).setAnisotropic(aniso);
 	}
 
 	/**
@@ -196,23 +135,23 @@ public class MD5Importer {
 	 * @param orientedBounding True if oriented bounding should be used. False otherwise.
 	 */
 	public void setOrientedBounding(boolean orientedBounding) {
-		this.orientedBounding = orientedBounding;
+		((MeshImporter)this.meshImporter).setOrientedBounding(orientedBounding);
 	}
 
 	/**
 	 * Retrieve the minification (MM) texture filter.
 	 * @return The <code>MinificationFilter</code> enumeration.
 	 */
-	public Texture.MinificationFilter getMiniFilter() {
-		return this.miniFilter;
+	public MinificationFilter getMiniFilter() {
+		return ((MeshImporter)this.meshImporter).getMiniFilter();
 	}
 
 	/**
 	 * Retrieve the magnification (FM) texture filter.
 	 * @return The <code>MagnificationFilter</code> enumeration.
 	 */
-	public Texture.MagnificationFilter getMagFilter() {
-		return this.magFilter;
+	public MagnificationFilter getMagFilter() {
+		return ((MeshImporter)this.meshImporter).getMagFilter();
 	}
 
 	/**
@@ -220,14 +159,14 @@ public class MD5Importer {
 	 * @return The <code>Integer</code> anisotropic level.
 	 */
 	public int getAnisotropic() {
-		return this.anisotropic;
+		return ((MeshImporter)this.meshImporter).getAnisotropic();
 	}
 
 	/**
 	 * Retrieve the MD5 node instance.
 	 * @return The <code>IMD5Node</code> instance.
 	 */
-	public IMD5Node getModelNode() {
+	public IMD5Node getMD5Node() {
 		return this.node;
 	}
 
@@ -244,16 +183,16 @@ public class MD5Importer {
 	 * @return True if oriented bounding should be used. False otherwise.
 	 */
 	public boolean isOriented() {
-		return this.orientedBounding;
+		return ((MeshImporter)this.meshImporter).isOriented();
 	}
 
 	/**
 	 * Cleanup the importer.
 	 */
 	public void cleanup() {
-		this.reader = null;
 		this.node = null;
 		this.animation = null;
-		MD5Importer.instance = null;
+		this.meshImporter.cleanup();
+		this.animImporter.cleanup();
 	}
 }

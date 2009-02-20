@@ -5,11 +5,14 @@ import com.model.md5.interfaces.mesh.IJoint;
 import com.model.md5.interfaces.mesh.IMesh;
 
 /**
- * <code>IMD5Node</code> defines the interface of a completed loaded MD5 model.
+ * <code>IMD5Node</code> defines the interface of a completed loaded
+ * MD5 model node. It can be maintained by other MD5 nodes as their
+ * dependent child, which will force the dependent child to follow
+ * the joints of its parent.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:27 EST
- * @version Modified date: 11-19-2008 17:07 EST
+ * @version Modified date: 02-17-2009 12:16 EST
  */
 public interface IMD5Node extends Savable {
 
@@ -46,16 +49,33 @@ public interface IMD5Node extends Savable {
 	public void attachDependent(IMD5Node node);
 	
 	/**
-	 * Set this MD5 node as a dependent child of another MD5 node. This
-	 * makes this node share the skeleton structure of its parent node.
-	 * @param parent The parent <code>IMD5Node</code>.
+	 * Remove the given controller from this node.
+	 * @param controller The <code>IMD5Controller</code> instance.
 	 */
-	public void setAsDependent(IMD5Node parent);
-
+	public void removeController(IMD5Controller controller);
+	
+	/**
+	 * Remove the given child from this node.
+	 * @param node The <code>IMD5Node</code> instance.
+	 */
+	public void removeChild(IMD5Node node);
+	
+	/**
+	 * Remove the given dependent child.
+	 * @param node The <code>IMD5Node</code> instance.
+	 */
+	public void removeDependent(IMD5Node node);
+	
 	/**
 	 * Notify the <code>IMD5Node</code> that its skeleton has been modified.
 	 */
 	public void flagUpdate();
+	
+	/**
+	 * Retrieve the name of the node.
+	 * @return The <code>String</code> name.
+	 */
+	public String getName();
 	
 	/**
 	 * Retrieve the skeleton of this MD5 node.
@@ -71,11 +91,23 @@ public interface IMD5Node extends Savable {
 	public IJoint getJoint(int index);
 	
 	/**
+	 * Retrieve the root joint.
+	 * @return The root <code>IJoint</code> instance.
+	 */
+	public IJoint getRootJoint();
+	
+	/**
 	 * Retrieve the mesh with given index.
 	 * @param index The <code>Integer</code> index number.
 	 * @return The <code>IMesh</code> instance.
 	 */
 	public IMesh getMesh(int index);
+	
+	/**
+	 * Retrieve all the meshes maintained by this node.
+	 * @return The array of <code>IMesh</code> instances.
+	 */
+	public IMesh[] getMeshes();
 	
 	/**
 	 * Clone this MD5 node.

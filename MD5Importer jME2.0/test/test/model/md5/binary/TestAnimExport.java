@@ -11,7 +11,6 @@ import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.util.export.binary.BinaryExporter;
 import com.model.md5.controller.MD5Controller;
-import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Animation;
 import com.model.md5.interfaces.IMD5Controller;
 import com.model.md5.interfaces.IMD5Node;
@@ -40,11 +39,11 @@ public class TestAnimExport extends TestMeshExport {
 		URL bodyURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/marine.md5anim");
 		URL headURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/sarge.md5anim");
 		try {
-			MD5Importer.getInstance().loadAnim(bodyURL, "bodyanim");
-			this.bodyAnim = MD5Importer.getInstance().getAnimation();
-			MD5Importer.getInstance().cleanup();
-			MD5Importer.getInstance().loadAnim(headURL, "heaedanim");
-			this.headAnim = MD5Importer.getInstance().getAnimation();
+			this.importer.loadAnim(bodyURL, "bodyanim");
+			this.bodyAnim = this.importer.getAnimation();
+			this.importer.cleanup();
+			this.importer.loadAnim(headURL, "heaedanim");
+			this.headAnim = this.importer.getAnimation();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -15,18 +15,18 @@ import com.jme.util.export.JMEExporter;
 import com.jme.util.export.JMEImporter;
 import com.jme.util.export.OutputCapsule;
 import com.jme.util.export.Savable;
-import com.model.md5.exception.InvalidAnimationException;
 import com.model.md5.interfaces.IMD5Animation;
 import com.model.md5.interfaces.IMD5Controller;
 import com.model.md5.interfaces.IMD5Node;
 import com.model.md5.interfaces.mesh.IJoint;
 
 /**
- * <code>MD5Controller</code> defines the concrete implementation of a MD5
- * controller unit.
+ * <code>MD5Controller</code> defines the concrete implementation
+ * of a MD5 controller unit.
  * <p>
- * <code>MD5Controller</code> interpolates the previous and next frame then
- * updates the skeleton with interpolated translation and orientation values.
+ * <code>MD5Controller</code> interpolates the previous and next
+ * frame then updates the skeleton with interpolated translation
+ * and orientation values.
  * 
  * @author Yi Wang (Neakor)
  * @version Modified date: 02-17-2009 11:27 EST
@@ -234,13 +234,14 @@ public class MD5Controller extends Controller implements IMD5Controller {
 
 	@Override
 	public void addAnimation(IMD5Animation animation) {
+		if(this.animations.containsKey(animation.getName())) return;
 		if(this.validateAnimation(animation)) {
 			synchronized(this.modifyLock) {
 				this.animations.put(animation.getName(), animation);
 				if(this.activeAnimation == null) this.fadeTo(animation, 0, true);
 			}
 		}
-		else throw new InvalidAnimationException();
+		else throw new IllegalArgumentException("Animation does not match skeleton system.");
 	}
 
 	@Override
@@ -257,8 +258,7 @@ public class MD5Controller extends Controller implements IMD5Controller {
 
 	@Override
 	public void fadeTo(String name, float duration, boolean scale) {
-		this.setActiveAnimation(this.animations.get(name));
-		this.enabledFading(duration, scale);
+		this.fadeTo(this.animations.get(name), duration, scale);
 	}
 
 	@Override
@@ -301,7 +301,7 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	private void setActiveAnimation(IMD5Animation animation) {
 		synchronized(this.updateLock) {
 			if(animation == null) MD5Controller.logger.info("Given animation is null.");
-			else if(!this.animations.containsValue(animation)) this.addAnimation(animation);
+			else this.addAnimation(animation);
 			this.activeAnimation = animation;
 		}
 	}

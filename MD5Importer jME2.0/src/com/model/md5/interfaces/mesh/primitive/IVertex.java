@@ -5,12 +5,12 @@ import com.jme.math.Vector3f;
 import com.jme.util.export.Savable;
 
 /**
- * <code>IVertex</code> defines the interface of a single vertex in a mesh
- * system. It maintains its own transformation based on the joints and weight
- * that affects it.
+ * <code>IVertex</code> defines the interface of a single vertex in
+ * a mesh system. It maintains its own transformation based on the
+ * joints and weight that affects it.
  * <p>
- * <code>IVertex</code> maintains its texture coordinates, normal vector and
- * position vector.
+ * <code>IVertex</code> maintains its texture coordinates, normal
+ * vector and position vector.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 20:50 EST

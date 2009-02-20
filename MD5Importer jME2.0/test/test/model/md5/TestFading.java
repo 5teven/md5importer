@@ -7,7 +7,6 @@ import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
-import com.model.md5.importer.MD5Importer;
 import com.model.md5.interfaces.IMD5Controller;
 import com.model.md5.interfaces.IMD5Node;
 
@@ -23,21 +22,21 @@ public class TestFading extends Test{
 		URL bodyMesh = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
 		URL bodyAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine.md5anim");
 		try {
-			MD5Importer.getInstance().load(bodyMesh, "ModelNode", bodyAnim, "BodyAnimation", Controller.RT_WRAP);
+			this.importer.load(bodyMesh, "ModelNode", bodyAnim, "BodyAnimation", Controller.RT_WRAP);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		IMD5Node body = MD5Importer.getInstance().getModelNode();
-		MD5Importer.getInstance().cleanup();
+		IMD5Node body = this.importer.getMD5Node();
+		this.importer.cleanup();
 		URL headMesh = TestFading.class.getClassLoader().getResource("test/model/md5/data/sarge.md5mesh");
 		URL headAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/sarge.md5anim");
 		try {
-			MD5Importer.getInstance().load(headMesh, "Head", headAnim, "HeadAnimation", Controller.RT_WRAP);
+			this.importer.load(headMesh, "Head", headAnim, "HeadAnimation", Controller.RT_WRAP);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		body.attachChild(MD5Importer.getInstance().getModelNode(), "Shoulders");
-		MD5Importer.getInstance().cleanup();
+		body.attachChild(this.importer.getMD5Node(), "Shoulders");
+		this.importer.cleanup();
 		return body;
 	}
 
@@ -65,11 +64,11 @@ public class TestFading extends Test{
 	private void addFadingAnim() {
 		URL bodyAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine_stand.md5anim");
 		try {
-			MD5Importer.getInstance().loadAnim(bodyAnim, "Stand");
+			this.importer.loadAnim(bodyAnim, "Stand");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.controller.addAnimation(MD5Importer.getInstance().getAnimation());
+		this.controller.addAnimation(this.importer.getAnimation());
 	}
 	
 	private void setupKey() {

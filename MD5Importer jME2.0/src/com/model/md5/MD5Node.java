@@ -19,16 +19,16 @@ import com.model.md5.interfaces.mesh.IMesh;
 /**
  * <code>MD5Node</code> is the final product of MD5 loading process.
  * <p>
- * <code>ModelNode</code> maintains the loaded <code>IJoint</code> and
- * <code>IMesh</code> instances and update them accordingly.
+ * <code>ModelNode</code> maintains the loaded <code>IJoint</code>
+ * and <code>IMesh</code> instances and update them accordingly.
  * <p>
- * <code>MD5Node</code> provides the cloning functionality so that users
- * can fast clone model nodes that may be used by multiple entities. The
- * newly cloned <code>MD5Node</code> is already initialized and ready
- * to be used.
+ * <code>MD5Node</code> provides the cloning functionality so that
+ * users can fast clone model nodes that may be used by multiple
+ * entities. The newly cloned <code>MD5Node</code> is already
+ * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-19-2008 17:14 EST
+ * @version Modified date: 02-19-2009 21:55 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -128,38 +128,38 @@ public class MD5Node extends Node implements IMD5Node {
 
 	@Override
 	public void attachChild(IMD5Node node, int jointIndex) {
-		this.getRootJoint(node).setSuperParent(this.getJoint(jointIndex));
+		node.getRootJoint().setSuperParent(this.getJoint(jointIndex));
 		this.attachChild((Spatial)node);
 		node.initialize();
 	}
 
 	@Override
 	public void attachDependent(IMD5Node node) {
+		if(this.dependents.contains(node)) return;
 		this.dependents.add(node);
-		node.setAsDependent(this);
+		((MD5Node)node).setDependent(true, this);
 		this.attachChild((Spatial)node);
 		node.initialize();
 	}
 
 	@Override
-	public void setAsDependent(IMD5Node parent) {
-		this.dependent = true;
-		this.joints = parent.getJoints();
-		for(IMesh mesh : this.meshes) {
-			mesh.setShare(this.joints);
-		}
+	public void removeController(IMD5Controller controller) {
+		super.removeController((MD5Controller)controller);
 	}
 
-	/**
-	 * Get the root joint of the given MD5 node.
-	 * @param node The <code>IMD5Node</code> to check from.
-	 * @return The root <code>IJoint</code> instance.
-	 */
-	private IJoint getRootJoint(IMD5Node node) {
-		for(int i = 0; i < node.getJoints().length; i++) {
-			if(node.getJoint(i).getParent() == null) return node.getJoint(i);
-		}
-		return null;
+	@Override
+	public void removeChild(IMD5Node node) {
+		node.getRootJoint().setSuperParent(null);
+		this.detachChild((Spatial)node);
+		node.initialize();
+	}
+
+	@Override
+	public void removeDependent(IMD5Node node) {
+		this.dependents.remove(node);
+		this.setDependent(false, this);
+		this.detachChild((Spatial)node);
+		node.initialize();
 	}
 
 	@Override
@@ -167,6 +167,30 @@ public class MD5Node extends Node implements IMD5Node {
 		this.update = true;
 		for(IMD5Node dependent : this.dependents) {
 			dependent.flagUpdate();
+		}
+	}
+
+	/**
+	 * Set this MD5 node as a dependent child of another MD5 node. This
+	 * makes this node share the skeleton structure of its parent node.
+	 * @param dependent True if this mesh should be set as dependent.
+	 * @param parent The <code>IMD5Node</code> parent.
+	 */
+	protected void setDependent(boolean dependent, IMD5Node parent) {
+		this.dependent = dependent;
+		if(this.dependent) {
+			this.joints = parent.getJoints();
+			for(IMesh mesh : this.meshes) {
+				mesh.setJoints(this.joints);
+			}
+		} else {
+			for(int i = 0; i < this.joints.length; i++) {
+				IJoint clone = this.joints[i].clone();
+				this.joints[i] = clone;
+			}
+			for(IMesh mesh : this.meshes) {
+				mesh.setJoints(this.joints);
+			}
 		}
 	}
 
@@ -181,8 +205,24 @@ public class MD5Node extends Node implements IMD5Node {
 	}
 
 	@Override
+	public IJoint getRootJoint() {
+		if(this.joints[0].getParent() == null) return this.joints[0];
+		else {
+			for(int i = 1; i < this.joints.length; i++) {
+				if(this.joints[i].getParent() == null) return this.joints[i];
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public IMesh getMesh(int index) {
 		return this.meshes[index];
+	}
+
+	@Override
+	public IMesh[] getMeshes() {
+		return this.meshes;
 	}
 
 	@Override
@@ -228,6 +268,25 @@ public class MD5Node extends Node implements IMD5Node {
 		this.initialize();
 	}
 
+	@Override
+	public String toString() {
+		return this.name;
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.name.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if(object instanceof MD5Node) {
+			MD5Node given = (MD5Node)object;
+			return given.name.equals(this.name);
+		}
+		return false;
+	}
+	
 	@Override
 	public IMD5Node clone() {
 		// Clone all the joints.

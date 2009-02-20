@@ -4,11 +4,10 @@ import com.jme.util.export.Savable;
 import com.model.md5.interfaces.mesh.primitive.IVertex;
 import com.model.md5.interfaces.mesh.primitive.IWeight;
 
-
 /**
- * <code>IMesh</code> defines the interface of a mesh in the model. It
- * maintains a number of vertices that compose a number of triangles. And
- * each vertex is affected with a weight.
+ * <code>IMesh</code> defines the interface of a mesh in the model.
+ * It maintains a number of vertices that compose a number of
+ * triangles. And each vertex is affected with a weight.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 20:12 EST
@@ -27,10 +26,10 @@ public interface IMesh extends Savable {
 	public void updateMesh();
 	
 	/**
-	 * Set this mesh to share the given joints instead of using its own.
-	 * @param joints The array of <code>IJoint</code> to be shared.
+	 * Set this mesh to use the given joints.
+	 * @param joints The array of <code>IJoint</code> to be used.
 	 */
-	public void setShare(IJoint[] joints);
+	public void setJoints(IJoint[] joints);
 
 	/**
 	 * Retrieve the vertex with given index number.
