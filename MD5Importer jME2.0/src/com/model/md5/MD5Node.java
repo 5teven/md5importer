@@ -28,7 +28,7 @@ import com.model.md5.interfaces.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-19-2009 21:55 EST
+ * @version Modified date: 02-21-2009 16:54 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -229,6 +229,11 @@ public class MD5Node extends Node implements IMD5Node {
 	@SuppressWarnings("unchecked")
 	public Class getClassTag() {
 		return MD5Node.class;
+	}
+
+	@Override
+	public boolean isDependent() {
+		return this.dependent;
 	}
 
 	@Override

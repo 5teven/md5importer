@@ -12,7 +12,7 @@ import com.model.md5.interfaces.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:27 EST
- * @version Modified date: 02-17-2009 12:16 EST
+ * @version Modified date: 02-21-2009 16:54 EST
  */
 public interface IMD5Node extends Savable {
 
@@ -108,6 +108,12 @@ public interface IMD5Node extends Savable {
 	 * @return The array of <code>IMesh</code> instances.
 	 */
 	public IMesh[] getMeshes();
+	
+	/**
+	 * Check if this MD5 node is a dependent child of some other node.
+	 * @return True if this MD5 node is dependent. False otherwise.
+	 */
+	public boolean isDependent();
 	
 	/**
 	 * Clone this MD5 node.
