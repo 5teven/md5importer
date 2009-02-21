@@ -29,7 +29,7 @@ import com.model.md5.interfaces.mesh.IJoint;
  * and orientation values.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-17-2009 11:27 EST
+ * @version Modified date: 02-20-2009 20:20 EST
  */
 public class MD5Controller extends Controller implements IMD5Controller {
 	/**
@@ -105,7 +105,10 @@ public class MD5Controller extends Controller implements IMD5Controller {
 	 * Constructor of <code>MD5Controller</code>.
 	 */
 	public MD5Controller(){
-		this(null);
+		this.updateLock = new Object();
+		this.modifyLock = new Object();
+		this.translation = new Vector3f();
+		this.orientation = new Quaternion();
 	}
 
 	/**
