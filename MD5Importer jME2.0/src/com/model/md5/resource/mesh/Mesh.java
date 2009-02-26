@@ -1,6 +1,8 @@
 package com.model.md5.resource.mesh;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.FloatBuffer;
@@ -44,7 +46,7 @@ import com.model.md5.interfaces.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-19-2009 23:06 EST
+ * @version Modified date: 02-25-2009 23:16 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -198,17 +200,19 @@ public class Mesh extends TriMesh implements IMesh {
 		}
 		this.setTextureCoords(new TexCoords(textureBuffer));
 		// Add a locator according to the texture string.
-		int last = this.texture.lastIndexOf("/");
-		if(last < 0) last = this.texture.length() - 1;
-		URL baseURL = this.getClass().getClassLoader().getResource(this.texture.substring(0, last));
+		int last = this.texture.lastIndexOf("/") + 1;
+		if(last < 0) last = this.texture.length();
+		File path = new File(this.texture.substring(0, last));
 		try {
-			if(baseURL != null) ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, new SimpleResourceLocator(baseURL));
+			if(path != null) ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, new SimpleResourceLocator(path.toURI().toURL()));
 		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
 		URL url = ResourceLocatorTool.locateResource(ResourceLocatorTool.TYPE_TEXTURE, this.texture);
 		// Load the texture and set the wrap mode.
-		Texture color = TextureManager.loadTexture(url,this.miniFilter,this.magFilter,this.anisotropic,true);
+		Texture color = TextureManager.loadTexture(url, this.miniFilter, this.magFilter, this.anisotropic, true);
 		if(color != null) {
 			if(maxU > 1) color.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Repeat);
 			else color.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Clamp);
@@ -258,7 +262,7 @@ public class Mesh extends TriMesh implements IMesh {
 		super.write(ex);
 		OutputCapsule oc = ex.getCapsule(this);
 		String raw = ((TextureState)this.getRenderState(StateType.Texture)).getTexture().getImageLocation();
-		oc.write(raw.substring(raw.indexOf("/")+1, raw.length()), "Texture", null);
+		oc.write(raw.substring(raw.indexOf("/"), raw.length()), "Texture", null);
 		oc.write(this.vertices, "Vertices", null);
 		oc.write(this.triangles, "Triangles", null);
 		oc.write(this.weights, "Weights", null);
