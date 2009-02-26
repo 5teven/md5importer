@@ -83,7 +83,7 @@ public class MD5Node extends Node implements IMD5Node {
 		}
 		if(!this.dependent) this.processJoints();
 		for(int i = 0; i < this.meshes.length; i++) {
-			this.meshes[i].initialize();
+			this.meshes[i].initialize(this.name);
 			this.attachChild((Spatial)this.meshes[i]);
 		}
 	}

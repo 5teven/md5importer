@@ -111,8 +111,8 @@ public class Mesh extends TriMesh implements IMesh {
 	}
 
 	@Override
-	public void initialize() {
-		this.setName("Mesh");
+	public void initialize(String name) {
+		this.setName(name + "Mesh");
 		this.setNormalsMode(Spatial.NormalsMode.AlwaysNormalize);
 		this.processIndex();
 		this.processVertex();

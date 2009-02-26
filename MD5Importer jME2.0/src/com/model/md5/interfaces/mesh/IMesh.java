@@ -17,8 +17,9 @@ public interface IMesh extends Savable {
 
 	/**
 	 * Initialize this mesh and its geometric data.
+	 * @param name The parent MD5 node <code>String</code> name.
 	 */
-	public void initialize();
+	public void initialize(String name);
 
 	/**
 	 * Update this mesh and its geometric data.
