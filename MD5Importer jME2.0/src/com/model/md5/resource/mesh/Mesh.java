@@ -46,7 +46,7 @@ import com.model.md5.interfaces.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-25-2009 23:16 EST
+ * @version Modified date: 02-28-2009 18:35 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -54,9 +54,17 @@ public class Mesh extends TriMesh implements IMesh {
 	 */
 	private static final long serialVersionUID = -6431941710991131243L;
 	/**
-	 * The <code>String</code> texture file name without extension.
+	 * The <code>String</code> color map file name.
 	 */
-	private String texture;
+	private String color;
+	/**
+	 * The <code>String</code> normal map file name.
+	 */
+	private String normal;
+	/**
+	 * The <code>String</code> specular map file name.
+	 */
+	private String specular;
 	/**
 	 * The array of <code>IVertex</code> in this mesh.
 	 */
@@ -102,7 +110,7 @@ public class Mesh extends TriMesh implements IMesh {
 	 */
 	public Mesh(String texture, IVertex[] vertices, ITriangle[] triangles, IWeight[] weights, int anisotropic, MinificationFilter miniFilter,
 			MagnificationFilter magFilter, boolean orientedBounding) {
-		this.texture = texture;
+		this.color = texture;
 		this.vertices = vertices;
 		this.triangles = triangles;
 		this.weights = weights;
@@ -199,29 +207,54 @@ public class Mesh extends TriMesh implements IMesh {
 			index++;
 		}
 		this.setTextureCoords(new TexCoords(textureBuffer));
+		
+		// Get texture state.
+		TextureState state = (TextureState)this.getRenderState(StateType.Texture);
+		if(state == null) {
+			state= DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
+			this.setRenderState(state);
+		}
+		// Set color map.
+		if(this.color != null) state.setTexture(this.loadTexture(this.color, maxU, maxV), 0);
+		// Set normal map.
+		if(this.normal != null) state.setTexture(this.loadTexture(this.normal, maxU, maxV), 1);
+		// Set specular map.
+		if(this.specular != null) state.setTexture(this.loadTexture(this.specular, maxU, maxV), 2);
+	}
+	
+	/**
+	 * Load the texture linked by given file and set its wrap modes based on given values.
+	 * @param file The <code>String</code> file location.
+	 * @param maxU The <code>Float</code> maximum u value.
+	 * @param maxV The <code>Float</code> maximum v value.
+	 * @return The loaded <code>Texture</code> instance.
+	 */
+	private Texture loadTexture(String file, float maxU, float maxV) {
 		// Add a locator according to the texture string.
-		int last = this.texture.lastIndexOf("/") + 1;
-		if(last < 0) last = this.texture.length();
-		File path = new File(this.texture.substring(0, last));
+		int last = file.lastIndexOf("/") + 1;
+		if(last < 0) last = file.length();
+		File path = new File(file.substring(0, last));
 		try {
-			if(path != null) ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, new SimpleResourceLocator(path.toURI().toURL()));
+			if(path != null) {
+				SimpleResourceLocator locator = new SimpleResourceLocator(path.toURI().toURL());
+				ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, locator);
+			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
-		URL url = ResourceLocatorTool.locateResource(ResourceLocatorTool.TYPE_TEXTURE, this.texture);
+		// Load URL.
+		URL url = ResourceLocatorTool.locateResource(ResourceLocatorTool.TYPE_TEXTURE, file);
 		// Load the texture and set the wrap mode.
-		Texture color = TextureManager.loadTexture(url, this.miniFilter, this.magFilter, this.anisotropic, true);
-		if(color != null) {
-			if(maxU > 1) color.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Repeat);
-			else color.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Clamp);
-			if(maxV > 1) color.setWrap(Texture.WrapAxis.T, Texture.WrapMode.Repeat);
-			else color.setWrap(Texture.WrapAxis.T, Texture.WrapMode.Clamp);
+		Texture map = TextureManager.loadTexture(url, this.miniFilter, this.magFilter, this.anisotropic, true);
+		if(map != null) {
+			if(maxU > 1) map.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Repeat);
+			else map.setWrap(Texture.WrapAxis.S, Texture.WrapMode.Clamp);
+			if(maxV > 1) map.setWrap(Texture.WrapAxis.T, Texture.WrapMode.Repeat);
+			else map.setWrap(Texture.WrapAxis.T, Texture.WrapMode.Clamp);
 		}
-		TextureState state = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
-		state.setTexture(color);
-		this.setRenderState(state);
+		return map;
 	}
 
 	/**
@@ -261,8 +294,23 @@ public class Mesh extends TriMesh implements IMesh {
 	public void write(JMEExporter ex) throws IOException {
 		super.write(ex);
 		OutputCapsule oc = ex.getCapsule(this);
-		String raw = ((TextureState)this.getRenderState(StateType.Texture)).getTexture().getImageLocation();
-		oc.write(raw.substring(raw.indexOf("/"), raw.length()), "Texture", null);
+		// Save all texture locations.
+		TextureState state = (TextureState)this.getRenderState(StateType.Texture);
+		Texture colorMap = state.getTexture(0);
+		Texture normalMap = state.getTexture(1);
+		Texture specularMap = state.getTexture(2);
+		if(colorMap != null) {
+			String colorRaw = colorMap.getImageLocation();
+			oc.write(colorRaw.substring(colorRaw.indexOf("/"), colorRaw.length()), "ColorMap", null);
+		}
+		if(normalMap != null) {
+			String normalRaw = normalMap.getImageLocation();
+			oc.write(normalRaw.substring(normalRaw.indexOf("/"), normalRaw.length()), "NormalMap", null);
+		}
+		if(specularMap != null) {
+			String specularRaw = specularMap.getImageLocation();
+			oc.write(specularRaw.substring(specularRaw.indexOf("/"), specularRaw.length()), "SpecularMap", null);
+		}
 		oc.write(this.vertices, "Vertices", null);
 		oc.write(this.triangles, "Triangles", null);
 		oc.write(this.weights, "Weights", null);
@@ -273,7 +321,9 @@ public class Mesh extends TriMesh implements IMesh {
 		super.read(im);
 		Savable[] temp = null;
 		InputCapsule ic = im.getCapsule(this);
-		this.texture = ic.readString("Texture", null);
+		this.color = ic.readString("ColorMap", null);
+		this.normal = ic.readString("NormalMap", null);
+		this.specular = ic.readString("SpecularMap", null);
 		temp = ic.readSavableArray("Vertices", null);
 		this.vertices = new IVertex[temp.length];
 		for(int i = 0; i < temp.length; i++) {
@@ -302,6 +352,6 @@ public class Mesh extends TriMesh implements IMesh {
 		// Then pass cloned vertices to clone triangles.
 		ITriangle[] clonedTriangles = new ITriangle[this.triangles.length];
 		for(int i = 0; i < clonedTriangles.length; i++) clonedTriangles[i] = this.triangles[i].clone(clonedVertices);
-		return new Mesh(new String(this.texture), clonedVertices, clonedTriangles, clonedWeights, this.anisotropic, this.miniFilter, this.magFilter, this.orientedBounding);
+		return new Mesh(new String(this.color), clonedVertices, clonedTriangles, clonedWeights, this.anisotropic, this.miniFilter, this.magFilter, this.orientedBounding);
 	}
 }
