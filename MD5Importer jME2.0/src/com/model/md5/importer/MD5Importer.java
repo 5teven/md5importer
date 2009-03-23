@@ -33,6 +33,10 @@ import com.model.md5.interfaces.IMD5Node;
  */
 public class MD5Importer {
 	/**
+	 * The singleton <code>MD5Importer</code> instance.
+	 */
+	private static MD5Importer instance = new MD5Importer();
+	/**
 	 * The mesh <code>ResourceImporter</code> instance.
 	 */
 	private final ResourceImporter<IMD5Node> meshImporter;
@@ -57,7 +61,15 @@ public class MD5Importer {
 		this.meshImporter = new MeshImporter();
 		this.animImporter = new AnimImporter();
 	}
-
+	
+	/**
+	 * Retrieve the singleton importer instance.
+	 * @return The <code>MD5Importer</code> instance.
+	 */
+	public static MD5Importer getInstance() {
+		return MD5Importer.instance;
+	}
+	
 	/**
 	 * Load the given md5mesh and md5anim files and assign the loaded
 	 * <code>JointAnimation</code> to the <code>Mesh</code>.
