@@ -10,13 +10,13 @@ package com.md5importer.interfaces;
  * modified. This notification is sent sequentially to all registered
  * observers.
  * <p>
- * <code>IObservable</code> provides thread safety on both the
- * register and notify methods by delegating thread safety to the
- * underlying thread safe data structures.
+ * <code>IObservable</code> provides thread safety on all the methods
+ * by delegating thread safety to the underlying thread safe data
+ * structures.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-24-2009 22:04 EST
- * @version Modified date: 03-24-2009 22:13 EST
+ * @version Modified date: 03-25-2009 11:07 EST
  */
 public interface IObservable {
 
@@ -30,4 +30,10 @@ public interface IObservable {
 	 * @param observer The <code>IObserver</code> to be registered.
 	 */
 	public void register(IObserver observer);
+	
+	/**
+	 * Unregister the given observer to stop notifying to it.
+	 * @param observer The <code>IObserver</code> to be unregistered.
+	 */
+	public void unregister(IObserver observer);
 }

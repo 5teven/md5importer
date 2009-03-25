@@ -40,4 +40,9 @@ public abstract class AbstractObservable implements IObservable {
 	public void register(IObserver observer) {
 		this.observers.add(observer);
 	}
+	
+	@Override
+	public void unregister(IObserver observer) {
+		this.observers.remove(observer);
+	}
 }

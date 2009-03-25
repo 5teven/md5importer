@@ -17,10 +17,14 @@ import com.md5importer.interfaces.model.mesh.IJoint;
  * of a concurrent controller unit that is responsible for updating
  * the <code>IMD5Node</code> given at construction time with active
  * <code>IMD5Anim</code>.
+ * <p>
+ * <code>MD5NodeController</code> uses lazy initialization on the
+ * temporary blending records since the blending utility may never
+ * be used.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:13 EST
- * @version Modified date: 03-24-2009 22:42 EST
+ * @version Modified date: 03-25-2009 10:56 EST
  */
 public class MD5NodeController extends AbstractController implements IMD5NodeController {
 	/**
@@ -43,6 +47,10 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 * The <code>Quaternion</code> temporary orientation.
 	 */
 	private final Quaternion orientation;
+	/**
+	 * The current active <code>IMD5Anim</code>.
+	 */
+	private volatile IMD5Anim activeAnim;
 	/**
 	 * The <code>Boolean</code> blending flag.
 	 */
@@ -144,8 +152,12 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	public void setActiveAnim(IMD5Anim anim, boolean blend, float duration) {
 		// Validate animation first.
 		if(!this.validateAnim(anim)) throw new IllegalArgumentException("Invalid animation: " + anim.getName());
-		// Lock if blending, since it needs to record concurrent joint formation.
+		// Unregister from the previous animation.
+		if(this.activeAnim != null) this.activeAnim.unregister(this);
+		// Record active animation does not require lock.
+		this.activeAnim = anim;
 		if(blend) {
+			// Lock if blending, since it needs to record concurrent joint formation.
 			this.lock.lock();
 			try {
 				this.prepareBlending(duration);
@@ -196,5 +208,10 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 				this.orientations[i].set(this.joints[i].getOrientation());
 			}
 		}
+	}
+
+	@Override
+	public IMD5Anim getActiveAnim() {
+		return this.activeAnim;
 	}
 }

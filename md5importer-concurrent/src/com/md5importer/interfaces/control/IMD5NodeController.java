@@ -35,10 +35,15 @@ import com.md5importer.interfaces.model.IMD5Anim;
  * guarantees the thread safety of <code>update</code> method if
  * more than one thread invokes <code>update</code>. However it is
  * advised to only invoke <code>update</code> within a single thread.
+ * Since the <code>setActiveAnim</code> method is guarded by a
+ * lock, the <code>getActiveAnim</code> is thread safe in the sense
+ * that it always reflects the most recently set active animation.
+ * However, there is no locking performed that method, which allows
+ * maximum concurrency.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:21 EST
- * @version Modified date: 03-24-2009 22:36 EST
+ * @version Modified date: 03-25-2009 10:47 EST
  */
 public interface IMD5NodeController extends IController, IObserver {
 	
@@ -46,10 +51,17 @@ public interface IMD5NodeController extends IController, IObserver {
 	 * Set the active animation with given parameters. the duration
 	 * and scale values are ignored if the blend flag is set to false.
 	 * This invocation registers this controller as an observer to the
-	 * given animation observable unit.
+	 * given animation observable unit and unregisters itself from the
+	 * previous active animation.
 	 * @param anim The <code>IMD5Anim</code> to be set.
 	 * @param blend The blending <code>Boolean</code> flag.
 	 * @param duration The <code>Float</code> blending duration.
 	 */
 	public void setActiveAnim(IMD5Anim anim, boolean blend, float duration);
+	
+	/**
+	 * Retrieve the current active animation.
+	 * @return The current active <code>IMD5Anim</code>.
+	 */
+	public IMD5Anim getActiveAnim();
 }
