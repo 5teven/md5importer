@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Essence Library/client/jME2.0_02_07.jar"/>
+	<classpathentry kind="lib" path="/Essence Library/client/lwjgl_util_applet.jar"/>
+	<classpathentry kind="lib" path="/Essence Library/client/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="/Essence Library/client/lwjgl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Essence Library/native/lwjgl/macosx-x86"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
