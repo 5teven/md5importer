@@ -1,24 +1,18 @@
 package com.md5importer.test.binary;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
-import com.jme.app.SimpleGame;
-import com.jme.scene.Spatial;
 import com.jme.util.export.binary.BinaryImporter;
-import com.jme.util.resource.MultiFormatResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import com.md5importer.interfaces.model.IMD5Node;
+import com.md5importer.test.Test;
 
 /**
  * Simple test to show how to load in the exported mesh.
- * We cannot extend test because this requires loading jME default textures.
- * The texture key has to be different.
  * 
  * @author Yi Wang (Neakor)
  */
-public class TestMeshImport extends SimpleGame {
+public class TestMeshImport extends Test {
 	
 	protected IMD5Node body;
 	protected IMD5Node head;
@@ -27,8 +21,7 @@ public class TestMeshImport extends SimpleGame {
 	protected double headtime;
 	
 	@Override
-	protected void simpleInitGame() {
-		this.overrideTextureKey();
+	protected IMD5Node setupModel() {
 		URL bodyurl = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/bodymesh.jme");
 		URL headurl = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/headmesh.jme");
 		try {
@@ -47,18 +40,11 @@ public class TestMeshImport extends SimpleGame {
 			e.printStackTrace();
 		}
 		this.body.attachChild(this.head, "Shoulders");
-		this.rootNode.attachChild((Spatial)this.body);
+		return this.body;
 	}
 
-	private void overrideTextureKey() {
-		try {
-			MultiFormatResourceLocator locator = new MultiFormatResourceLocator(this.getClass().getClassLoader().getResource("com/md5importer/test/data/texture/"), 
-					new String[]{".tga"});
-			ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, locator);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-	}
+	@Override
+	protected void setupGame() {}
 
 	public static void main(String[] args) {
 		new TestMeshImport().start();

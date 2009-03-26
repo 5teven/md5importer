@@ -52,7 +52,7 @@ joints {
 
 mesh {
 	// meshes: sargeheadmesh1
-	shader "models/characters/sarge2/hsarge"
+	shader "models/characters/sarge2/hsarge.tga"
 
 	numverts 193
 	vert 0 ( 0.5325559974 0.1609259844 ) 0 1
