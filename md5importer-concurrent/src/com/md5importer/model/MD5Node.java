@@ -26,17 +26,13 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-21-2009 16:54 EST
+ * @version Modified date: 03-25-2009 18:07 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
 	 * Serial version.
 	 */
 	private static final long serialVersionUID = -2799207065296472869L;
-	/**
-	 * The flag indicates if the skeleton has been modified.
-	 */
-	private boolean update;
 	/**
 	 * The flag indicates if model node shares skeleton with its parent.
 	 */
@@ -79,32 +75,15 @@ public class MD5Node extends Node implements IMD5Node {
 				this.detachChild((Spatial)this.meshes[i]);
 			}
 		}
-		if(!this.dependent) this.processJoints();
+		if(!this.dependent) {
+			for(IJoint joint : this.joints) {
+				joint.processRelative();
+			}
+		}
 		for(int i = 0; i < this.meshes.length; i++) {
 			this.meshes[i].initialize(this.name);
 			this.attachChild((Spatial)this.meshes[i]);
 		}
-	}
-
-	/**
-	 * Process the skeleton relative transformations.
-	 */
-	private void processJoints() {
-		for(IJoint joint : this.joints) {
-			joint.processRelative();
-		}
-	}
-
-	@Override
-	public void updateGeometricState(float time, boolean initiator) {
-		if(this.update) {
-			if(!this.dependent) this.processJoints();
-			for(int i = 0; i < this.meshes.length; i++) {
-				this.meshes[i].updateMesh();
-			}
-			this.update = false;
-		}
-		super.updateGeometricState(time, initiator);
 	}
 
 	@Override
@@ -148,14 +127,6 @@ public class MD5Node extends Node implements IMD5Node {
 		this.setDependent(false, this);
 		this.detachChild((Spatial)node);
 		node.initialize();
-	}
-
-	@Override
-	public void flagUpdate() {
-		this.update = true;
-		for(IMD5Node dependent : this.dependents) {
-			dependent.flagUpdate();
-		}
 	}
 
 	/**
@@ -217,6 +188,11 @@ public class MD5Node extends Node implements IMD5Node {
 	@SuppressWarnings("unchecked")
 	public Class getClassTag() {
 		return MD5Node.class;
+	}
+
+	@Override
+	public Iterable<IMD5Node> getDependents() {
+		return this.dependents;
 	}
 
 	@Override

@@ -1,19 +1,20 @@
 package com.md5importer.test.util;
 
-import com.md5importer.control.MD5AnimController;
-import com.md5importer.interfaces.control.IMD5AnimController;
-import com.md5importer.interfaces.model.IMD5Anim;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ThreadedController implements Runnable {
+import com.md5importer.interfaces.control.IController;
 
-	private final IMD5AnimController animController;
+public class ThreadedUpdater implements Runnable {
+
+	private final Queue<IController> controllers;
 	private final float time;
 	private final Thread thread;
 	private volatile boolean started;
 	private float interpolation;
 
-	public ThreadedController(IMD5Anim anim, int rate) {
-		this.animController = new MD5AnimController(anim);
+	public ThreadedUpdater(int rate) {
+		this.controllers = new ConcurrentLinkedQueue<IController>();
 		this.time = 1000.0f/(float)rate;
 		this.thread = new Thread(this);
 	}
@@ -29,12 +30,20 @@ public class ThreadedController implements Runnable {
 	public void stop() {
 		this.started = false;
 	}
+	
+	public void addController(IController controller) {
+		this.controllers.add(controller);
+	}
+	
+	public void removeController(IController controller) {
+		this.controllers.remove(controller);
+	}
 
 	@Override
 	public void run() {
 		while(this.started) {
 			final long start = System.currentTimeMillis();
-			this.animController.update(this.interpolation);
+			for(IController controller : this.controllers) controller.update(this.interpolation);
 			final long end = System.currentTimeMillis();
 			final long diff = end - start;
 			final long sleep = (long)(this.time - diff);
@@ -46,9 +55,5 @@ public class ThreadedController implements Runnable {
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public IMD5AnimController getAnimController() {
-		return this.animController;
 	}
 }

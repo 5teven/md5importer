@@ -1,6 +1,7 @@
 package com.md5importer.interfaces.control;
 
 import com.md5importer.enumn.ERepeatType;
+import com.md5importer.interfaces.model.IMD5Anim;
 
 /**
  * <code>IMD5AnimController</code> defines the interface of a logic
@@ -12,6 +13,10 @@ import com.md5importer.enumn.ERepeatType;
  * time. It updates the next and previous frame indices based on the
  * given frame time interpolation value, the repeat type and the
  * speed value of the controller.
+ * <p>
+ * <code>IMD5AnimController</code> requires external invocations
+ * to the <code>update</code> method to perform animation update
+ * operation. This operation updates the maintained animation.
  * <p>
  * <code>IMD5AnimController</code> only provides primitive level of
  * thread safety. It guarantees the memory visibility of the most
@@ -25,15 +30,9 @@ import com.md5importer.enumn.ERepeatType;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 17:51 EST
- * @version Modified date: 03-24-2009 22:34 EST
+ * @version Modified date: 03-25-2009 22:11 EST
  */
 public interface IMD5AnimController extends IController {
-
-	/**
-	 * Update the animation controller to update the animation frames.
-	 * @param interpolation The <code>Float</code> time interpolation.
-	 */
-	public void update(float interpolation);
 
 	/**
 	 * Set the repeat type of this controller.
@@ -52,6 +51,18 @@ public interface IMD5AnimController extends IController {
 	 * @return The <code>ERepeatType</code> enumeration.
 	 */
 	public ERepeatType getRepeatType();
+	
+	/**
+	 * Retrieve the animation this controller controls.
+	 * @return The controlled <code>IMD5Anim</code>.
+	 */
+	public IMD5Anim getAnim();
+	
+	/**
+	 * Reset the controller by resetting the accumulated time to
+	 * zero and resetting the animation to the first frame.
+	 */
+	public void reset();
 
 	/**
 	 * Check if this animation is being played backward.

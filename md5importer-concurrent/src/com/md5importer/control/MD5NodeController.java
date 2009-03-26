@@ -1,8 +1,5 @@
 package com.md5importer.control;
 
-import java.util.concurrent.locks.ReentrantLock;
-
-import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.md5importer.interfaces.IObservable;
@@ -11,6 +8,7 @@ import com.md5importer.interfaces.model.IMD5Anim;
 import com.md5importer.interfaces.model.IMD5Node;
 import com.md5importer.interfaces.model.anim.IFrame;
 import com.md5importer.interfaces.model.mesh.IJoint;
+import com.md5importer.interfaces.model.mesh.IMesh;
 
 /**
  * <code>MD5NodeController</code> defines the concrete implementation
@@ -24,7 +22,7 @@ import com.md5importer.interfaces.model.mesh.IJoint;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:13 EST
- * @version Modified date: 03-25-2009 10:56 EST
+ * @version Modified date: 03-25-2009 18:44 EST
  */
 public class MD5NodeController extends AbstractController implements IMD5NodeController {
 	/**
@@ -36,9 +34,9 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 */
 	private final IJoint[] joints;
 	/**
-	 * The update <code>ReentrantLock</code>.
+	 * The array of <code>IMesh</code> in the node.
 	 */
-	private final ReentrantLock lock;
+	private final IMesh[] meshes;
 	/**
 	 * The <code>Vector3f</code> temporary translation.
 	 */
@@ -51,22 +49,6 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 * The current active <code>IMD5Anim</code>.
 	 */
 	private volatile IMD5Anim activeAnim;
-	/**
-	 * The <code>Boolean</code> blending flag.
-	 */
-	private volatile boolean blending;
-	/**
-	 * The <code>Float</code> blending duration value in seconds.
-	 */
-	private volatile float duration;
-	/**
-	 * The array of <code>Vector3f</code> translations used for blending.
-	 */
-	private Vector3f[] translations;
-	/**
-	 * The array of <code>Quaternion</code> orientations used for blending.
-	 */
-	private Quaternion[] orientations;
 
 	/**
 	 * Constructor of <code>MD5NodeController</code>.
@@ -74,43 +56,21 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 */
 	public MD5NodeController(IMD5Node node) {
 		this.node = node;
-		this.joints = this.node.getJoints();
-		this.lock = new ReentrantLock();
+		this.joints = node.getJoints();
+		this.meshes = node.getMeshes();
 		this.translation = new Vector3f();
 		this.orientation = new Quaternion();
 	}
 
 	@Override
+	public void update(float interpolation) {}
+
+	@Override
 	public void update(IObservable observable) {
 		if(observable == null || !this.active) return;
 		IMD5Anim anim = (IMD5Anim)observable;
-		// Lock to prevent setting invalid blending information by another thread.
-		this.lock.lock();
-		try {
-			if(this.blending) this.updateBlending(anim.getTime()/this.duration, anim.getPreviousFrame());
-			else this.updateJoints(this.interpolation(anim), anim.getPreviousFrame(), anim.getNextFrame());
-		} finally {
-			this.lock.unlock();
-		}
-	}
-
-	/**
-	 * Update the joints with blending based on given interpolation and frame.
-	 * @param interpolation The <code>Float</code> update interpolation.
-	 * @param prev The previous <code>IFrame</code> in the active animation.
-	 */
-	private void updateBlending(final float interpolation, final IFrame prev) {
-		for(int i = 0; i < this.joints.length; i++) {
-			this.translation.interpolate(this.translations[i], prev.getTranslation(i), interpolation);
-			this.orientation.slerp(this.orientations[i], prev.getOrientation(i), interpolation);
-			this.joints[i].updateTransform(this.translation, this.orientation);
-		}
-		if(interpolation >= 1) {
-			// Lock is already acquired.
-			this.blending = false;
-			this.duration = 0;
-		}
-		this.node.flagUpdate();
+		this.updateJoints(this.interpolation(anim), anim.getPreviousFrame(), anim.getNextFrame());
+		this.updateMeshes();
 	}
 
 	/**
@@ -124,8 +84,22 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 			this.translation.interpolate(prev.getTranslation(i), next.getTranslation(i), interpolation);
 			this.orientation.slerp(prev.getOrientation(i), next.getOrientation(i), interpolation);
 			this.joints[i].updateTransform(this.translation, this.orientation);
+			this.joints[i].processRelative();
 		}
-		this.node.flagUpdate();
+	}
+
+	/**
+	 * Update the geometric information of all meshes in the node.
+	 */
+	private void updateMeshes() {
+		// Update mesh geometric information.
+		for(IMesh mesh : this.meshes) mesh.updateMesh();
+		// Update dependent children.
+		final Iterable<IMD5Node> children = this.node.getDependents();
+		for(IMD5Node child : children) {
+			final IMesh[] meshes = child.getMeshes();
+			for(final IMesh mesh : meshes) mesh.updateMesh();
+		}
 	}
 
 	/**
@@ -149,25 +123,16 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	}
 
 	@Override
-	public void setActiveAnim(IMD5Anim anim, boolean blend, float duration) {
+	public void setActiveAnim(IMD5Anim anim) {
+		if(anim == null) return;
 		// Validate animation first.
 		if(!this.validateAnim(anim)) throw new IllegalArgumentException("Invalid animation: " + anim.getName());
 		// Unregister from the previous animation.
 		if(this.activeAnim != null) this.activeAnim.unregister(this);
 		// Record active animation does not require lock.
 		this.activeAnim = anim;
-		if(blend) {
-			// Lock if blending, since it needs to record concurrent joint formation.
-			this.lock.lock();
-			try {
-				this.prepareBlending(duration);
-			} finally {
-				// Release lock before invoke external register method.
-				this.lock.unlock();
-			}
-		}
 		// Register this controller as observer.
-		anim.register(this);
+		this.activeAnim.register(this);
 	}
 
 	/**
@@ -183,30 +148,6 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 				result = this.joints[i].getName().equals(anim.getJointIDs()[i]);
 			}
 			return result;
-		}
-	}
-
-	/**
-	 * Prepare the blending process by setting proper temporary blending values.
-	 * @param duration The <code>Float</code> blending duration.
-	 */
-	private void prepareBlending(float duration) {
-		// Store arguments.
-		this.blending = true;
-		this.duration = FastMath.abs(duration);
-		// Prepare.
-		if(this.translations == null && this.orientations == null) {
-			this.translations = new Vector3f[this.joints.length];
-			this.orientations = new Quaternion[this.joints.length];
-			for(int i = 0; i < this.joints.length; i++) {
-				this.translations[i] = this.joints[i].getTranslation().clone();
-				this.orientations[i] = this.joints[i].getOrientation().clone();
-			}
-		} else {
-			for(int i = 0; i < this.joints.length; i++) {
-				this.translations[i].set(this.joints[i].getTranslation());
-				this.orientations[i].set(this.joints[i].getOrientation());
-			}
 		}
 	}
 

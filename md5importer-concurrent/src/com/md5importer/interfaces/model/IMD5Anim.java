@@ -40,7 +40,7 @@ public interface IMD5Anim extends IObservable {
 	 * @param time The The <code>Float</code> elapsed time since last set.
 	 */
 	public void setIndices(int prev, int next, float time);
-
+	
 	/**
 	 * Retrieve the total time of a complete cycle of this animation.
 	 * @return The <code>Float</code> complete cycle time.

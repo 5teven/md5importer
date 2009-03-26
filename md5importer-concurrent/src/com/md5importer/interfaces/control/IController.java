@@ -10,6 +10,12 @@ package com.md5importer.interfaces.control;
  * @version Modified date: 03-23-2009 18:02 EST
  */
 public interface IController {
+	
+	/**
+	 * Update the controller.
+	 * @param interpolation The <code>Float</code> time interpolation.
+	 */
+	public void update(float interpolation);
 
 	/**
 	 * Set the activeness of this controller.

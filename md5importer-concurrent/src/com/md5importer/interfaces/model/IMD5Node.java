@@ -12,7 +12,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:27 EST
- * @version Modified date: 03-23-2009 18:43 EST
+ * @version Modified date: 03-25-2009 18:06 EST
  */
 public interface IMD5Node extends Savable {
 
@@ -55,11 +55,6 @@ public interface IMD5Node extends Savable {
 	public void removeDependent(IMD5Node node);
 	
 	/**
-	 * Notify the <code>IMD5Node</code> that its skeleton has been modified.
-	 */
-	public void flagUpdate();
-	
-	/**
 	 * Retrieve the name of the node.
 	 * @return The <code>String</code> name.
 	 */
@@ -96,6 +91,12 @@ public interface IMD5Node extends Savable {
 	 * @return The array of <code>IMesh</code> instances.
 	 */
 	public IMesh[] getMeshes();
+	
+	/**
+	 * Retrieve the dependent children.
+	 * @return The <code>Iterable</code> of <code>IMD5Node</code>.
+	 */
+	public Iterable<IMD5Node> getDependents();
 	
 	/**
 	 * Check if this MD5 node is a dependent child of some other node.

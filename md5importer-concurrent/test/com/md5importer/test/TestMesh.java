@@ -30,7 +30,6 @@ public class TestMesh extends Test {
 			e.printStackTrace();
 		}
 		this.body.attachChild(this.head, "Shoulders");
-		this.body.flagUpdate();
 		this.importer.cleanup();
 		return body;
 	}

@@ -11,7 +11,7 @@ import com.md5importer.interfaces.model.IMD5Anim;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 18:14 EST
- * @version Modified date: 03-24-2009 22:35 EST
+ * @version Modified date: 03-25-2009 17:11 EST
  */
 public class MD5AnimController extends AbstractController implements IMD5AnimController {
 	/**
@@ -29,7 +29,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 	/**
 	 * The time elapsed since last change in key frame.
 	 */
-	private float time;
+	private volatile float time;
 	/**
 	 * The flag indicates if this animation is being played backwards.
 	 */
@@ -133,7 +133,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 			}
 		}
 	}
-
+	
 	@Override
 	public void setRepeatType(ERepeatType type) {
 		this.repeat = type;
@@ -147,6 +147,17 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 	@Override
 	public ERepeatType getRepeatType() {
 		return this.repeat;
+	}
+
+	@Override
+	public IMD5Anim getAnim() {
+		return this.anim;
+	}
+
+	@Override
+	public void reset() {
+		this.time = 0;
+		this.anim.setIndices(0, 1, 0);
 	}
 
 	@Override

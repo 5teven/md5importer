@@ -5,73 +5,114 @@ import java.net.URL;
 
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
-import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
-import com.model.md5.interfaces.IMD5Controller;
-import com.model.md5.interfaces.IMD5Node;
+import com.md5importer.control.BlendController;
+import com.md5importer.control.MD5AnimController;
+import com.md5importer.control.MD5NodeController;
+import com.md5importer.interfaces.control.IBlendController;
+import com.md5importer.interfaces.control.IMD5AnimController;
+import com.md5importer.interfaces.control.IMD5NodeController;
+import com.md5importer.interfaces.model.IMD5Anim;
+import com.md5importer.interfaces.model.IMD5Node;
+import com.md5importer.test.util.ThreadedUpdater;
 
-public class TestFading extends Test{
-	private IMD5Controller controller;
+public class TestFading extends Test {
 
-	public static void main(String[] args) {
-		new TestFading().start();	
-	}
-
+	private IMD5Node body;
+	private IMD5Node head;
+	
+	private IMD5Anim walk;
+	private IMD5Anim stand;
+	
+	private IMD5NodeController bodyController;
+	private IMD5AnimController walkAnimController;
+	private IMD5AnimController standAnimController;
+	
+	private ThreadedUpdater updater;
+	
+	private IBlendController blender;
+	
 	@Override
 	protected IMD5Node loadModel() {
-		URL bodyMesh = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
-		URL bodyAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine.md5anim");
 		try {
-			this.importer.load(bodyMesh, "ModelNode", bodyAnim, "BodyAnimation", Controller.RT_WRAP);
+			// Load meshes.
+			this.loadMeshes();
+			// Load animations.
+			URL walkAnimURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/marine.md5anim");
+			this.walk = this.importer.loadAnim(walkAnimURL, "walk");
+			this.importer.cleanup();
+			URL standAnimURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/marine_stand.md5anim");
+			this.stand = this.importer.loadAnim(standAnimURL, "stand");
+			this.importer.cleanup();
+			URL headAnimURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/sarge.md5anim");
+			IMD5Anim headAnim = this.importer.loadAnim(headAnimURL, "headAnim");
+			this.importer.cleanup();
+			// Create controller for body and head.
+			this.bodyController = new MD5NodeController(this.body);
+			IMD5NodeController headController = new MD5NodeController(this.head);
+			// Set active animations.
+			this.bodyController.setActiveAnim(this.walk);
+			headController.setActiveAnim(headAnim);
+			// Create animation controllers.
+			this.walkAnimController = new MD5AnimController(this.walk);
+			this.standAnimController = new MD5AnimController(this.stand);
+			this.standAnimController.setActive(false);
+			IMD5AnimController headAnimController = new MD5AnimController(headAnim);
+			// Create a blender.
+			this.blender = new BlendController(this.body, this.bodyController);
+			// Create a threaded updater to update animations in separate thread.
+			this.updater = new ThreadedUpdater(60);
+			this.updater.addController(this.walkAnimController);
+			this.updater.addController(this.standAnimController);
+			this.updater.addController(headAnimController);
+			this.updater.addController(this.blender);
+			this.updater.start();
+			return this.body;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		IMD5Node body = this.importer.getMD5Node();
-		this.importer.cleanup();
-		URL headMesh = TestFading.class.getClassLoader().getResource("test/model/md5/data/sarge.md5mesh");
-		URL headAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/sarge.md5anim");
+		return null;
+	}
+	
+	private void loadMeshes() {
 		try {
-			this.importer.load(headMesh, "Head", headAnim, "HeadAnimation", Controller.RT_WRAP);
+			URL bodyMeshURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/marine.md5mesh");
+			this.body = this.importer.loadMesh(bodyMeshURL, "body");
+			this.importer.cleanup();
+			URL headMeshURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/sarge.md5mesh");
+			this.head = this.importer.loadMesh(headMeshURL, "head");
+			this.body.attachChild(this.head, "Shoulders");
+			this.importer.cleanup();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		body.attachChild(this.importer.getMD5Node(), "Shoulders");
-		this.importer.cleanup();
-		return body;
 	}
 
 	@Override
 	protected void setupGame() {
-		Spatial node = this.rootNode.getChild("ModelNode");
+		Spatial node = this.rootNode.getChild("body");
 		node.setLocalScale(1);
-		node.getController(0).setSpeed(0.2f);
-		this.controller = (IMD5Controller)node.getController(0);
-		this.addFadingAnim();
-		this.setupKey();
+		KeyBindingManager.getKeyBindingManager().set("fade", KeyInput.KEY_O);
 	}
-	
+
 	protected void simpleUpdate() {
 		if(KeyBindingManager.getKeyBindingManager().isValidCommand("fade", false)) {
-			if(this.controller.getActiveAnimation().getName() != "Stand") {
-				this.controller.fadeTo("Stand", 3, false);
-			} else {
-				this.controller.fadeTo("BodyAnimation", 3, false);
+			if(this.bodyController.getActiveAnim().getName().equals("walk")) {
+				this.walkAnimController.setActive(false);
+				this.blender.blend(this.stand, this.standAnimController, 0.5f);
+			} else if(this.bodyController.getActiveAnim().getName().equals("stand")) {
+				this.standAnimController.setActive(false);
+				this.blender.blend(this.walk, this.walkAnimController, 0.5f);
 			}
 		}
+	}
+	
+	protected void cleanup() {
+		super.cleanup();
+		this.updater.stop();
+	}
 
-	}
-	
-	private void addFadingAnim() {
-		URL bodyAnim = TestFading.class.getClassLoader().getResource("test/model/md5/data/marine_stand.md5anim");
-		try {
-			this.importer.loadAnim(bodyAnim, "Stand");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.controller.addAnimation(this.importer.getAnimation());
-	}
-	
-	private void setupKey() {
-		KeyBindingManager.getKeyBindingManager().set("fade", KeyInput.KEY_O);
+	public static void main(String[] args) {
+		new TestFading().start();
 	}
 }
