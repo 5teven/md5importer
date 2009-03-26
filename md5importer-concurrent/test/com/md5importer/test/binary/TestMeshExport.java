@@ -33,7 +33,7 @@ public class TestMeshExport extends Test {
 	}
 
 	@Override
-	protected IMD5Node loadModel() {
+	protected IMD5Node setupModel() {
 		URL md5mesh = TestMesh.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
 		try {
 			this.importer.loadMesh(md5mesh, "ModelNode");

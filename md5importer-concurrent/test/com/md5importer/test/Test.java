@@ -21,7 +21,7 @@ public abstract class Test extends SimpleGame{
 	@Override
 	protected void simpleInitGame() {
 		this.overrideTextureKey();
-		Node node = (Node)this.loadModel();
+		Node node = (Node)this.setupModel();
 		node.setLocalTranslation(0, -40, -300);
 		this.rootNode.attachChild(node);
 		this.setupGame();
@@ -38,7 +38,7 @@ public abstract class Test extends SimpleGame{
 		}
 	}
 
-	abstract protected IMD5Node loadModel();
+	abstract protected IMD5Node setupModel();
 	
 	abstract protected void setupGame();
 }

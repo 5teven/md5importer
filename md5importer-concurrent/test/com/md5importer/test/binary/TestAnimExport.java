@@ -34,8 +34,8 @@ public class TestAnimExport extends TestMeshExport {
 	}
 	
 	@Override
-	protected IMD5Node loadModel() {
-		super.loadModel();
+	protected IMD5Node setupModel() {
+		super.setupModel();
 		URL bodyURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/marine.md5anim");
 		URL headURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/sarge.md5anim");
 		try {

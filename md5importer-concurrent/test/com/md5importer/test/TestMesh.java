@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.md5importer.interfaces.model.IMD5Node;
-import com.md5importer.model.MD5Node;
 
 /**
  * A simple test for loading a static model.
@@ -12,20 +11,17 @@ import com.md5importer.model.MD5Node;
  */
 public class TestMesh extends Test {
 	
-	private IMD5Node body;
-	private IMD5Node head;
+	protected IMD5Node body;
+	protected IMD5Node head;
 
-	protected IMD5Node loadModel() {
-		URL md5mesh = TestMesh.class.getClassLoader().getResource("com/md5importer/test/data/marine.md5mesh");
+	protected IMD5Node setupModel() {
 		try {
-			this.body = this.importer.loadMesh(md5mesh, "ModelNode");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.importer.cleanup();
-		URL head = TestMesh.class.getClassLoader().getResource("com/md5importer/test/data/sarge.md5mesh");
-		try {
-			this.head = this.importer.loadMesh(head, "Head");
+			URL bodyURL = TestMesh.class.getClassLoader().getResource("com/md5importer/test/data/marine.md5mesh");
+			this.body = this.importer.loadMesh(bodyURL, "body");
+			this.importer.cleanup();
+			URL headURL = TestMesh.class.getClassLoader().getResource("com/md5importer/test/data/sarge.md5mesh");
+			this.head = this.importer.loadMesh(headURL, "head");
+			this.importer.cleanup();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -35,10 +31,7 @@ public class TestMesh extends Test {
 	}
 
 	@Override
-	protected void setupGame() {
-		MD5Node node = (MD5Node)this.rootNode.getChild("ModelNode");
-		node.setLocalScale(1);
-	}
+	protected void setupGame() {}
 
 	public static void main(String[] args) {
 		new TestMesh().start();
