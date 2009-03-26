@@ -1,9 +1,8 @@
 package com.md5importer.test.clone;
 
 import com.jme.scene.Spatial;
+import com.md5importer.interfaces.model.IMD5Node;
 import com.md5importer.test.binary.TestMeshImport;
-import com.model.md5.interfaces.IMD5Node;
-
 
 /**
  * Demo shows how fast mesh cloning is over loading binary files.
@@ -11,8 +10,10 @@ import com.model.md5.interfaces.IMD5Node;
  * @author Yi Wang (Neakor)
  */
 public class TestMeshClone extends TestMeshImport {
+	
 	protected IMD5Node bodyclone;
 	protected IMD5Node headclone;
+	
 	private double headclonetime;
 	private double bodyclonetime;
 
@@ -24,16 +25,18 @@ public class TestMeshClone extends TestMeshImport {
 	protected void simpleInitGame() {
 		super.simpleInitGame();
 		long start = System.nanoTime();
-		this.bodyclone = this.bodyNode.clone();
+		this.bodyclone = this.body.clone();
 		long end = System.nanoTime();
 		this.bodyclonetime = (end - start)/1000000.0;
 		start = System.nanoTime();
-		this.headclone = this.headNode.clone();
+		this.headclone = this.head.clone();
 		end = System.nanoTime();
 		this.headclonetime = (end - start)/1000000.0;
 		this.bodyclone.attachChild(this.headclone, "Shoulders");
-		((Spatial)this.bodyclone).setLocalTranslation(0, -30, -100);
+		
+		((Spatial)this.bodyclone).setLocalTranslation(50, -40, -300);
 		this.rootNode.attachChild((Spatial)this.bodyclone);
+		
 		this.printResult();
 	}
 	
