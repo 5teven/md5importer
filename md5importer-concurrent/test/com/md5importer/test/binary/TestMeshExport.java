@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-
 import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.scene.Spatial;
 import com.jme.util.export.binary.BinaryExporter;
+import com.md5importer.interfaces.model.IMD5Node;
 import com.md5importer.test.Test;
-import com.md5importer.test.TestMesh;
-import com.model.md5.interfaces.IMD5Node;
 
 /**
  * Demo shows how to export mesh files.
@@ -21,46 +19,38 @@ import com.model.md5.interfaces.IMD5Node;
  * @author Yi Wang (Neakor)
  */
 public class TestMeshExport extends Test {
-	private final String body = "bodymesh.jme";
-	private final String head = "headmesh.jme";
-	protected IMD5Node bodyNode;
-	protected IMD5Node headNode;
-	private File bodyFile;
-	private File headFile;
-
-	public static void main(String[] args) {
-		new TestMeshExport().start();
-	}
+	
+	protected IMD5Node body;
+	protected IMD5Node head;
+	
+	private File bodyfile;
+	private File headfile;
 
 	@Override
 	protected IMD5Node setupModel() {
-		URL md5mesh = TestMesh.class.getClassLoader().getResource("test/model/md5/data/marine.md5mesh");
 		try {
-			this.importer.loadMesh(md5mesh, "ModelNode");
+			URL bodyURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/marine.md5mesh");
+			this.body = this.importer.loadMesh(bodyURL, "body");
+			this.importer.cleanup();
+			
+			URL headURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/sarge.md5mesh");
+			this.head = this.importer.loadMesh(headURL, "head");
+			this.importer.cleanup();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.bodyNode = this.importer.getMD5Node();
-		this.importer.cleanup();
-		URL head = TestMesh.class.getClassLoader().getResource("test/model/md5/data/sarge.md5mesh");
-		try {
-			this.importer.loadMesh(head, "Head");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.headNode = this.importer.getMD5Node();
-		this.rootNode.attachChild((Spatial)this.headNode);
-		return this.bodyNode;
+		this.rootNode.attachChild((Spatial)this.head);
+		return this.body;
 	}
 
 	@Override
 	protected void setupGame() {
 		KeyBindingManager.getKeyBindingManager().set("export", KeyInput.KEY_O);
-		URL bodyURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.body);
-		URL headURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.head);
+		URL bodyURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/bodymesh.jme");
+		URL headURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/headmesh.jme");
 		try {
-			this.bodyFile = new File(bodyURL.toURI());
-			this.headFile = new File(headURL.toURI());
+			this.bodyfile = new File(bodyURL.toURI());
+			this.headfile = new File(headURL.toURI());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -74,10 +64,14 @@ public class TestMeshExport extends Test {
 
 	protected void export() {
 		try {
-			BinaryExporter.getInstance().save(this.bodyNode, this.bodyFile);
-			BinaryExporter.getInstance().save(this.headNode, this.headFile);
+			BinaryExporter.getInstance().save(this.body, this.bodyfile);
+			BinaryExporter.getInstance().save(this.head, this.headfile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args) {
+		new TestMeshExport().start();
 	}
 }

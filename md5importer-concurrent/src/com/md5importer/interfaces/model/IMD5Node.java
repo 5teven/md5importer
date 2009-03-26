@@ -43,16 +43,16 @@ public interface IMD5Node extends Savable {
 	public void attachDependent(IMD5Node node);
 	
 	/**
-	 * Remove the given child from this node.
+	 * Detach the given child from this node.
 	 * @param node The <code>IMD5Node</code> instance.
 	 */
-	public void removeChild(IMD5Node node);
+	public void detachChild(IMD5Node node);
 	
 	/**
-	 * Remove the given dependent child.
+	 * Detach the given dependent child.
 	 * @param node The <code>IMD5Node</code> instance.
 	 */
-	public void removeDependent(IMD5Node node);
+	public void detachDependent(IMD5Node node);
 	
 	/**
 	 * Retrieve the name of the node.

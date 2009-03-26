@@ -115,14 +115,14 @@ public class MD5Node extends Node implements IMD5Node {
 	}
 
 	@Override
-	public void removeChild(IMD5Node node) {
+	public void detachChild(IMD5Node node) {
 		node.getRootJoint().setSuperParent(null);
 		this.detachChild((Spatial)node);
 		node.initialize();
 	}
 
 	@Override
-	public void removeDependent(IMD5Node node) {
+	public void detachDependent(IMD5Node node) {
 		this.dependents.remove(node);
 		this.setDependent(false, this);
 		this.detachChild((Spatial)node);

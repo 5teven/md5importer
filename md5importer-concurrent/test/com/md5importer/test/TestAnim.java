@@ -56,12 +56,12 @@ public class TestAnim extends TestMesh {
 		return null;
 	}
 	
-	public static void main(String[] args) {
-		new TestAnim().start();
-	}
-	
 	protected void cleanup() {
 		super.cleanup();
 		this.updater.stop();
+	}
+
+	public static void main(String[] args) {
+		new TestAnim().start();
 	}
 }
