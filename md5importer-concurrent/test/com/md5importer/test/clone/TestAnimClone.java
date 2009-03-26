@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.jme.util.export.binary.BinaryImporter;
-import com.model.md5.MD5Animation;
-import com.model.md5.controller.MD5Controller;
-import com.model.md5.interfaces.IMD5Animation;
-import com.model.md5.interfaces.IMD5Controller;
+import com.md5importer.control.MD5AnimController;
+import com.md5importer.control.MD5NodeController;
+import com.md5importer.interfaces.control.IMD5AnimController;
+import com.md5importer.interfaces.control.IMD5NodeController;
+import com.md5importer.interfaces.model.IMD5Anim;
+import com.md5importer.test.util.ThreadedUpdater;
 
 /**
  * Test to show how fast animation cloning is over reading binary file.
@@ -15,19 +17,18 @@ import com.model.md5.interfaces.IMD5Controller;
  * @author Yi Wang (Neakor)
  */
 public class TestAnimClone extends TestMeshClone {
-	private final String body = "bodyanim.jme";
-	private final String head = "headanim.jme";
-	private MD5Animation bodyAnim;
-	private MD5Animation headAnim;
+
+	private IMD5Anim bodyAnim;
+	private IMD5Anim headAnim;
+
+	protected ThreadedUpdater updater;
+	protected ThreadedUpdater cloneUpdater;
+	
 	private double headanimtime;
 	private double bodyanimtime;
 	private double headanimclonetime;
 	private double bodyanimclonetime;
 
-	public static void main(String[] args) {
-		new TestAnimClone().start();		
-	}
-	
 	@Override
 	protected void simpleInitGame() {
 		super.simpleInitGame();
@@ -35,60 +36,78 @@ public class TestAnimClone extends TestMeshClone {
 		this.cloneAnim();
 		this.printResult();
 	}
-	
+
 	private void loadAnim() {
-		URL bodyURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.body);
-		URL headURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.head);
+		URL bodyURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/bodyanim.jme");
+		URL headURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/headanim.jme");
 		try {
 			long start = System.nanoTime();
-			this.bodyAnim = (MD5Animation)BinaryImporter.getInstance().load(bodyURL);
+			this.bodyAnim = (IMD5Anim)BinaryImporter.getInstance().load(bodyURL);
 			long end = System.nanoTime();
 			this.bodyanimtime = (end - start)/1000000.0;
 			start = System.nanoTime();
-			this.headAnim = (MD5Animation)BinaryImporter.getInstance().load(headURL);
+			this.headAnim = (IMD5Anim)BinaryImporter.getInstance().load(headURL);
 			end = System.nanoTime();
 			this.headanimtime = (end - start)/1000000.0;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		IMD5Controller bodycontroller = new MD5Controller(this.bodyNode);
-		bodycontroller.addAnimation(this.bodyAnim);
-		bodycontroller.setRepeatType(1);
-		bodycontroller.setActive(true);
-		this.bodyNode.addController(bodycontroller);
-		IMD5Controller headcontroller = new MD5Controller(this.headNode);
-		headcontroller.addAnimation(this.headAnim);
-		headcontroller.setRepeatType(1);
-		headcontroller.setActive(true);
-		this.headNode.addController(headcontroller);	
+		// Create controller for body and head.
+		IMD5NodeController bodyController = new MD5NodeController(this.body);
+		IMD5NodeController headController = new MD5NodeController(this.head);
+		// Set active animations.
+		bodyController.setActiveAnim(this.bodyAnim);
+		headController.setActiveAnim(this.headAnim);
+		// Create animation controllers.
+		IMD5AnimController walkAnimController = new MD5AnimController(this.bodyAnim);
+		IMD5AnimController headAnimController = new MD5AnimController(this.headAnim);
+		// Create a threaded updater to update animations in separate thread.
+		this.updater = new ThreadedUpdater(60);
+		this.updater.addController(walkAnimController);
+		this.updater.addController(headAnimController);
+		this.updater.start();
 	}
 
 	private void cloneAnim() {
 		long start = System.nanoTime();
-		IMD5Animation bodyclone = this.bodyAnim.clone();
+		IMD5Anim bodyanimclone = this.bodyAnim.clone();
 		long end = System.nanoTime();
 		this.bodyanimclonetime = (end - start)/1000000.0;
 		start = System.nanoTime();
-		IMD5Animation headclone = this.headAnim.clone();
+		IMD5Anim headanimclone = this.headAnim.clone();
 		end = System.nanoTime();
 		this.headanimclonetime = (end - start)/1000000.0;
-		IMD5Controller bodycontroller = new MD5Controller(this.bodyclone);
-		bodycontroller.addAnimation(bodyclone);
-		bodycontroller.setRepeatType(1);
-		bodycontroller.setActive(true);
-		bodycontroller.setSpeed(0.2f);
-		this.bodyclone.addController(bodycontroller);
-		IMD5Controller headcontroller = new MD5Controller(this.headclone);
-		headcontroller.addAnimation(headclone);
-		headcontroller.setRepeatType(1);
-		headcontroller.setActive(true);
-		this.headclone.addController(headcontroller);	
+		
+		// Create controller for body and head.
+		IMD5NodeController bodyController = new MD5NodeController(this.bodyclone);
+		IMD5NodeController headController = new MD5NodeController(this.headclone);
+		// Set active animations.
+		bodyController.setActiveAnim(bodyanimclone);
+		headController.setActiveAnim(headanimclone);
+		// Create animation controllers.
+		IMD5AnimController walkAnimController = new MD5AnimController(bodyanimclone);
+		IMD5AnimController headAnimController = new MD5AnimController(headanimclone);
+		// Create a threaded updater to update animations in separate thread.
+		this.cloneUpdater = new ThreadedUpdater(60);
+		this.cloneUpdater.addController(walkAnimController);
+		this.cloneUpdater.addController(headAnimController);
+		this.cloneUpdater.start();
 	}
-	
+
 	private void printResult() {
 		System.out.println("Loading body animation took: " + this.bodyanimtime + " millisecond\n");
 		System.out.println("Cloning body animation took: " + this.bodyanimclonetime + " millisecond\n");
 		System.out.println("Loading head animation took: " + this.headanimtime + " millisecond\n");
 		System.out.println("Cloning head animation took: " + this.headanimclonetime + " millisecond\n");
+	}
+	
+	protected void cleanup() {
+		super.cleanup();
+		this.updater.stop();
+		this.cloneUpdater.stop();
+	}
+
+	public static void main(String[] args) {
+		new TestAnimClone().start();		
 	}
 }
