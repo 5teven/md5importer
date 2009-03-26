@@ -71,7 +71,7 @@ joints {
 
 mesh {
 	// meshes: marinebodymesh
-	shader "models/characters/male_npc/marine/marine"
+	shader "models/characters/male_npc/marine/marine.tga"
 
 	numverts 961
 	vert 0 ( 0.1113319993 0.7144190073 ) 0 4

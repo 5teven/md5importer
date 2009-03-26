@@ -1,14 +1,11 @@
 package test.model.md5.binary;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
-import com.jme.app.SimpleGame;
-import com.jme.scene.Spatial;
+import test.model.md5.Test;
+
 import com.jme.util.export.binary.BinaryImporter;
-import com.jme.util.resource.MultiFormatResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import com.model.md5.MD5Node;
 import com.model.md5.interfaces.IMD5Node;
 
@@ -17,7 +14,7 @@ import com.model.md5.interfaces.IMD5Node;
  * 
  * @author Yi Wang (Neakor)
  */
-public class TestMeshImport extends SimpleGame{
+public class TestMeshImport extends Test {
 	private final String body = "bodymesh.jme";
 	private final String head = "headmesh.jme";
 	protected IMD5Node bodyNode;
@@ -25,13 +22,8 @@ public class TestMeshImport extends SimpleGame{
 	protected double bodytime;
 	protected double headtime;
 	
-	public static void main(String[] args) {
-		new TestMeshImport().start();
-	}
-
 	@Override
-	protected void simpleInitGame() {
-		this.overrideTextureKey();
+	protected IMD5Node loadModel() {
 		URL bodyURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.body);
 		URL headURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.head);
 		try {
@@ -47,16 +39,13 @@ public class TestMeshImport extends SimpleGame{
 			e.printStackTrace();
 		}
 		this.bodyNode.attachChild(this.headNode, "Shoulders");
-		this.rootNode.attachChild((Spatial)this.bodyNode);
+		return this.bodyNode;
 	}
-	
-	private void overrideTextureKey() {
-		try {
-			MultiFormatResourceLocator locator = new MultiFormatResourceLocator(this.getClass().getClassLoader().getResource("test/model/md5/data/texture/"), 
-					new String[]{".tga"});
-			ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, locator);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+
+	@Override
+	protected void setupGame() {}
+
+	public static void main(String[] args) {
+		new TestMeshImport().start();
 	}
 }

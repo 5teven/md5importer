@@ -321,9 +321,9 @@ public class MD5Node extends Node implements IMD5Node {
 		clone.setCullHint(this.getCullHint());
 		clone.setIsCollidable(this.isCollidable());
 		clone.setLightCombineMode(this.getLightCombineMode());
-		clone.setLocalRotation(this.getLocalRotation());
-		clone.setLocalScale(this.getLocalScale());
-		clone.setLocalTranslation(this.getLocalTranslation());
+		clone.setLocalRotation(this.getLocalRotation().clone());
+		clone.setLocalScale(this.getLocalScale().clone());
+		clone.setLocalTranslation(this.getLocalTranslation().clone());
 		clone.setNormalsMode(this.getLocalNormalsMode());
 		clone.setRenderQueueMode(this.getRenderQueueMode());
 		clone.setTextureCombineMode(this.getTextureCombineMode());
