@@ -10,10 +10,6 @@ import com.jme.input.KeyBindingManager;
 import com.jme.input.KeyInput;
 import com.jme.util.export.binary.BinaryExporter;
 import com.md5importer.test.TestAnim;
-import com.model.md5.controller.MD5Controller;
-import com.model.md5.interfaces.IMD5Animation;
-import com.model.md5.interfaces.IMD5Controller;
-import com.model.md5.interfaces.IMD5Node;
 
 /**
  * Demo shows how to export anim files.
@@ -21,50 +17,17 @@ import com.model.md5.interfaces.IMD5Node;
  * 
  * @author Yi Wang (Neakor)
  */
-public class TestAnimExport extends TestMeshExport {
-	private final String body = "bodyanim.jme";
-	private final String head = "headanim.jme";
-	private IMD5Animation bodyAnim;
-	private IMD5Animation headAnim;
+public class TestAnimExport extends TestAnim {
+	
 	private File bodyanimFile;
 	private File headanimFile;
 
-	public static void main(String[] args) {
-		new TestAnimExport().start();
-	}
-	
-	@Override
-	protected IMD5Node setupModel() {
-		super.setupModel();
-		URL bodyURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/marine.md5anim");
-		URL headURL = TestAnim.class.getClassLoader().getResource("test/model/md5/data/sarge.md5anim");
-		try {
-			this.importer.loadAnim(bodyURL, "bodyanim");
-			this.bodyAnim = this.importer.getAnimation();
-			this.importer.cleanup();
-			this.importer.loadAnim(headURL, "heaedanim");
-			this.headAnim = this.importer.getAnimation();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		IMD5Controller bodycontroller = new MD5Controller(this.bodyNode);
-		bodycontroller.addAnimation(this.bodyAnim);
-		bodycontroller.setRepeatType(1);
-		bodycontroller.setActive(true);
-		this.bodyNode.addController(bodycontroller);
-		IMD5Controller headcontroller = new MD5Controller(this.headNode);
-		headcontroller.addAnimation(this.headAnim);
-		headcontroller.setRepeatType(1);
-		headcontroller.setActive(true);
-		this.headNode.addController(headcontroller);		
-		return this.bodyNode;
-	}
-	
 	@Override
 	protected void setupGame() {
+		super.setupGame();
 		KeyBindingManager.getKeyBindingManager().set("export", KeyInput.KEY_O);
-		URL bodyURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.body);
-		URL headURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.head);
+		URL bodyURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/bodyanim.jme");
+		URL headURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/headanim.jme");
 		try {
 			this.bodyanimFile = new File(bodyURL.toURI());
 			this.headanimFile = new File(headURL.toURI());
@@ -74,12 +37,22 @@ public class TestAnimExport extends TestMeshExport {
 	}
 	
 	@Override
-	protected void export() {
+	protected void simpleUpdate() {
+		if(KeyBindingManager.getKeyBindingManager().isValidCommand("export", false)) {
+			this.export();
+		}
+	}
+	
+	private void export() {
 		try {
-			BinaryExporter.getInstance().save(this.bodyAnim, this.bodyanimFile);
+			BinaryExporter.getInstance().save(this.walk, this.bodyanimFile);
 			BinaryExporter.getInstance().save(this.headAnim, this.headanimFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args) {
+		new TestAnimExport().start();
 	}
 }

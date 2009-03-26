@@ -75,7 +75,11 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 	 * Constructor of <code>MD5Anim</code>.
 	 */
 	public MD5Anim() {
-		this(null, null, null, 0);
+		this.lock = new ReentrantLock();
+		// Default values.
+		this.time = 0;
+		this.prev = 0;
+		this.next = 1;
 	}
 
 	/**

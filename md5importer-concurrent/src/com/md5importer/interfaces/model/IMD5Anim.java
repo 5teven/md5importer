@@ -1,5 +1,6 @@
 package com.md5importer.interfaces.model;
 
+import com.jme.util.export.Savable;
 import com.md5importer.interfaces.IObservable;
 import com.md5importer.interfaces.model.anim.IFrame;
 
@@ -31,7 +32,7 @@ import com.md5importer.interfaces.model.anim.IFrame;
  * @version Creation date: 03-23-2009 16:17 EST
  * @version Modified date: 03-24-2009 22:15 EST
  */
-public interface IMD5Anim extends IObservable {
+public interface IMD5Anim extends IObservable, Savable {
 	
 	/**
 	 * Set the frame indices.

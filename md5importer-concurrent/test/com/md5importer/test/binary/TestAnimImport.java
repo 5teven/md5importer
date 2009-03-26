@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.net.URL;
 
 import com.jme.util.export.binary.BinaryImporter;
-import com.model.md5.MD5Animation;
-import com.model.md5.controller.MD5Controller;
-import com.model.md5.interfaces.IMD5Controller;
+import com.md5importer.control.MD5AnimController;
+import com.md5importer.control.MD5NodeController;
+import com.md5importer.interfaces.control.IMD5AnimController;
+import com.md5importer.interfaces.control.IMD5NodeController;
+import com.md5importer.interfaces.model.IMD5Anim;
+import com.md5importer.test.util.ThreadedUpdater;
 
 /**
  * Simple test to show how to load in the exported animations.
@@ -14,35 +17,52 @@ import com.model.md5.interfaces.IMD5Controller;
  * @author Yi Wang (Neakor)
  */
 public class TestAnimImport extends TestMeshImport {
-	private final String body = "bodyanim.jme";
-	private final String head = "headanim.jme";
-	private MD5Animation bodyAnim;
-	private MD5Animation headAnim;
-
-	public static void main(String[] args) {
-		new TestAnimImport().start();
-	}
 	
+	protected IMD5Anim walk;
+	protected IMD5Anim headAnim;
+	
+	protected IMD5NodeController bodyController;
+	protected IMD5AnimController walkAnimController;
+	
+	protected ThreadedUpdater updater;
+
 	@Override
 	protected void simpleInitGame() {
 		super.simpleInitGame();
-		URL bodyURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.body);
-		URL headURL = this.getClass().getClassLoader().getResource("test/model/md5/data/binary/" + this.head);
+		this.importAnims();
+		// Create controller for body and head.
+		this.bodyController = new MD5NodeController(this.body);
+		IMD5NodeController headController = new MD5NodeController(this.head);
+		// Set active animations.
+		this.bodyController.setActiveAnim(this.walk);
+		headController.setActiveAnim(this.headAnim);
+		// Create animation controllers.
+		this.walkAnimController = new MD5AnimController(this.walk);
+		IMD5AnimController headAnimController = new MD5AnimController(this.headAnim);
+		// Create a threaded updater to update animations in separate thread.
+		this.updater = new ThreadedUpdater(60);
+		this.updater.addController(this.walkAnimController);
+		this.updater.addController(headAnimController);
+		this.updater.start();
+	}
+	
+	private void importAnims() {
+		URL walkURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/bodyanim.jme");
+		URL headURL = this.getClass().getClassLoader().getResource("com/md5importer/test/data/binary/headanim.jme");
 		try {
-			this.bodyAnim = (MD5Animation)BinaryImporter.getInstance().load(bodyURL);
-			this.headAnim = (MD5Animation)BinaryImporter.getInstance().load(headURL);
+			this.walk = (IMD5Anim)BinaryImporter.getInstance().load(walkURL);
+			this.headAnim = (IMD5Anim)BinaryImporter.getInstance().load(headURL);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		IMD5Controller bodycontroller = new MD5Controller(this.bodyNode);
-		bodycontroller.addAnimation(this.bodyAnim);
-		bodycontroller.setRepeatType(1);
-		bodycontroller.setActive(true);
-		this.bodyNode.addController(bodycontroller);
-		IMD5Controller headcontroller = new MD5Controller(this.headNode);
-		headcontroller.addAnimation(this.headAnim);
-		headcontroller.setRepeatType(1);
-		headcontroller.setActive(true);
-		this.headNode.addController(headcontroller);	
+	}
+	
+	protected void cleanup() {
+		super.cleanup();
+		this.updater.stop();
+	}
+	
+	public static void main(String[] args) {
+		new TestAnimImport().start();
 	}
 }

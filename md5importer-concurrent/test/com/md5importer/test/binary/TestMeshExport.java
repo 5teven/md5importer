@@ -62,7 +62,7 @@ public class TestMeshExport extends Test {
 		}
 	}
 
-	protected void export() {
+	private void export() {
 		try {
 			BinaryExporter.getInstance().save(this.body, this.bodyfile);
 			BinaryExporter.getInstance().save(this.head, this.headfile);

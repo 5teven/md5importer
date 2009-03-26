@@ -18,6 +18,7 @@ import com.md5importer.test.util.ThreadedUpdater;
 public class TestAnim extends TestMesh {
 	
 	protected IMD5Anim walk;
+	protected IMD5Anim headAnim;
 	
 	protected IMD5NodeController bodyController;
 	protected IMD5AnimController walkAnimController;
@@ -33,17 +34,17 @@ public class TestAnim extends TestMesh {
 			this.walk = this.importer.loadAnim(bodyAnimURL, "walk");
 			this.importer.cleanup();
 			URL headAnimURL = TestAnim.class.getClassLoader().getResource("com/md5importer/test/data/sarge.md5anim");
-			IMD5Anim headAnim = this.importer.loadAnim(headAnimURL, "headAnim");
+			this.headAnim = this.importer.loadAnim(headAnimURL, "headAnim");
 			this.importer.cleanup();
 			// Create controller for body and head.
 			this.bodyController = new MD5NodeController(this.body);
 			IMD5NodeController headController = new MD5NodeController(this.head);
 			// Set active animations.
 			this.bodyController.setActiveAnim(this.walk);
-			headController.setActiveAnim(headAnim);
+			headController.setActiveAnim(this.headAnim);
 			// Create animation controllers.
 			this.walkAnimController = new MD5AnimController(this.walk);
-			IMD5AnimController headAnimController = new MD5AnimController(headAnim);
+			IMD5AnimController headAnimController = new MD5AnimController(this.headAnim);
 			// Create a threaded updater to update animations in separate thread.
 			this.updater = new ThreadedUpdater(60);
 			this.updater.addController(this.walkAnimController);
