@@ -11,7 +11,7 @@ import com.md5importer.interfaces.model.IMD5Anim;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 18:14 EST
- * @version Modified date: 03-25-2009 17:11 EST
+ * @version Modified date: 03-27-2009 19:20 EST
  */
 public class MD5AnimController extends AbstractController implements IMD5AnimController {
 	/**
@@ -38,7 +38,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 	 * The flag indicates if this cycle is completed but the new cycle has not yet started.
 	 */
 	private volatile boolean complete;
-	
+
 	/**
 	 * Constructor of <code>MD5AnimController</code>.
 	 * @param anim The <code>IMD5Anim</code> instance.
@@ -67,7 +67,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 		// Notify update.
 		this.anim.notifyUpdate();
 	}
-	
+
 	/**
 	 * Update as the repeat mode is set to clamp.
 	 * @param interpolation The <code>Float</code> time interpolation.
@@ -76,7 +76,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 		this.time = this.time + (interpolation * this.speed);
 		while(this.time >= this.anim.getNextTime()) {
 			this.anim.setIndices(this.anim.getPreviousIndex()+1, this.anim.getNextIndex()+1, this.time);
-			if(this.anim.getNextIndex() > this.anim.getFrameCount() - 1) {
+			if(this.anim.getNextIndex() == this.anim.getFrameCount() - 1) {
 				this.anim.setIndices(this.anim.getFrameCount()-2, this.anim.getFrameCount()-1, this.time);
 				this.complete = true;
 				this.time = 0.0f;
@@ -94,7 +94,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 			this.time = this.time + (interpolation * this.speed);
 			while(this.time >= this.anim.getNextTime()) {
 				this.anim.setIndices(this.anim.getPreviousIndex()+1, this.anim.getNextIndex()+1, this.time);
-				if(this.anim.getNextIndex() > this.anim.getFrameCount() - 1) {
+				if(this.anim.getNextIndex() == this.anim.getFrameCount() - 1) {
 					this.backward = true;
 					this.anim.setIndices(this.anim.getFrameCount()-1, this.anim.getFrameCount()-2, this.time);
 					this.complete = true;
@@ -106,7 +106,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 			this.time = this.time - (interpolation * this.speed);
 			while(this.time <= this.anim.getNextTime()) {
 				this.anim.setIndices(this.anim.getNextIndex(), this.anim.getNextIndex()-1, this.time);
-				if(this.anim.getNextIndex() < 0) {
+				if(this.anim.getNextIndex() == 0) {
 					this.backward = false;
 					this.anim.setIndices(0, 1, this.time);
 					this.complete = true;
@@ -125,7 +125,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 		this.time = this.time + (interpolation * this.speed);
 		while(this.time >= this.anim.getNextTime()) {
 			this.anim.setIndices(this.anim.getPreviousIndex()+1, this.anim.getNextIndex()+1, this.time);
-			if(this.anim.getNextIndex() > this.anim.getFrameCount() - 1) {
+			if(this.anim.getNextIndex() == this.anim.getFrameCount() - 1) {
 				this.anim.setIndices(0, 1, this.time);
 				this.complete = true;
 				this.time = 0.0f;
@@ -133,7 +133,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 			}
 		}
 	}
-	
+
 	@Override
 	public void setRepeatType(ERepeatType type) {
 		this.repeat = type;
@@ -157,6 +157,7 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 	@Override
 	public void reset() {
 		this.time = 0;
+		this.complete = false;
 		this.anim.setIndices(0, 1, 0);
 	}
 

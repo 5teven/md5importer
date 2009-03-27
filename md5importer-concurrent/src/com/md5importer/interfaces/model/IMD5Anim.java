@@ -22,20 +22,20 @@ import com.md5importer.interfaces.model.anim.IFrame;
  * invoked after the indices have been set completely in an update
  * cycle.
  * <p>
- * <code>IMD5Anim</code> does not perform any locking on any of the
- * retrieval methods. However, it does provide thread safety on the
- * <code>setIndices</code> method by using <code>ReentrantLock</code>.
- * This guarantees the compound action for setting the previous and
- * next frame indices is performed atomically. 
+ * <code>IMD5Anim</code> uses <code>ReentrantLock</code> to guard
+ * <code>setIndices</code> and all the frame related retrieval
+ * methods to guarantees the compound action for setting the next
+ * and previous frame indices is performed atomically.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 16:17 EST
- * @version Modified date: 03-24-2009 22:15 EST
+ * @version Modified date: 03-27-2009 19:01 EST
  */
 public interface IMD5Anim extends IObservable, Savable {
 	
 	/**
-	 * Set the frame indices.
+	 * Set the frame indices with given values. The given values are
+	 * automatically clamped between 0 and the last frame index.
 	 * @param prev The <code>Integer</code> previous frame index.
 	 * @param next The <code>Integer</code> next frame index.
 	 * @param time The The <code>Float</code> elapsed time since last set.

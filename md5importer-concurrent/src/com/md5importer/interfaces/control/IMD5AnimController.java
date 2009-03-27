@@ -18,19 +18,18 @@ import com.md5importer.interfaces.model.IMD5Anim;
  * to the <code>update</code> method to perform animation update
  * operation. This operation updates the maintained animation.
  * <p>
- * <code>IMD5AnimController</code> only provides primitive level of
- * thread safety. It guarantees the memory visibility of the most
- * recent set operations. However, there is no actual locking
- * performed on any of the set methods to allow maximum concurrency.
- * <code>IMD5NodeController</code> does not perform any locking on
- * the update operation either. It assumes the update operation is
- * only invoked in a single thread. This design decision is made to
- * reduce locking overhead. In almost all cases, it is always best
- * to invoke the update operation within a single thread.
+ * <code>IMD5AnimController</code> only provides primitive thread
+ * safety. It guarantees the memory visibility of the most recent
+ * set operation results on both update and retrieval methods.
+ * However, there is no actual locking performed to allow maximum
+ * concurrency. This implies that the <code>update</code> method
+ * has to be confined within a single updating thread. In reality,
+ * it does not make any sense to update the same animation with
+ * multiple threads anyways.
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 17:51 EST
- * @version Modified date: 03-25-2009 22:11 EST
+ * @version Modified date: 03-27-2009 19:20 EST
  */
 public interface IMD5AnimController extends IController {
 

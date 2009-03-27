@@ -23,7 +23,7 @@ import com.md5importer.interfaces.model.anim.IFrame;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 17:36 EST
- * @version Modified date: 03-24-2009 22:25 EST
+ * @version Modified date: 03-27-2009 19:05 EST
  */
 public class MD5Anim extends AbstractObservable implements Serializable, IMD5Anim, Savable {
 	/**
@@ -61,15 +61,15 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 	/**
 	 * The time elapsed since last change in key frame.
 	 */
-	private volatile float time;
+	private float time;
 	/**
 	 * The index of the previous frame.
 	 */
-	private volatile int prev;
+	private int prev;
 	/**
 	 * The index of the next frame.
 	 */
-	private volatile int next;
+	private int next;
 	
 	/**
 	 * Constructor of <code>MD5Anim</code>.
@@ -114,6 +114,11 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 			this.prev = prev;
 			this.next = next;
 			this.time = time;
+			// Clamp.
+			if(this.prev < 0) this.prev = 0;
+			else if(this.prev >= this.getFrameCount()) this.prev = this.getFrameCount() - 1;
+			if(this.next < 0) this.next = 0;
+			else if(this.next >= this.getFrameCount()) this.next = this.getFrameCount() - 1;
 		} finally {
 			// Release lock before invoke external method for notification.
 			this.lock.unlock();
@@ -132,39 +137,74 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 
 	@Override
 	public float getPercentage() {
-		return (float)this.next / (float)this.getFrameCount();
+		this.lock.lock();
+		try {
+			return (float)this.next / (float)this.getFrameCount();
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public IFrame getPreviousFrame() {
-		return this.frames[this.prev];
+		this.lock.lock();
+		try {
+			return this.frames[this.prev];
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public int getPreviousIndex() {
-		return this.prev;
+		this.lock.lock();
+		try {
+			return this.prev;
+		} finally  {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public float getPreviousTime() {
-		if(this.frameTimes != null) return this.frameTimes[this.prev];
-		return ((float)this.prev) * (1.0f/this.frameRate);
+		this.lock.lock();
+		try {
+			if(this.frameTimes != null) return this.frameTimes[this.prev];
+			return ((float)this.prev) * (1.0f/this.frameRate);
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public IFrame getNextFrame() {
-		return this.frames[this.next];
+		this.lock.lock();
+		try {
+			return this.frames[this.next];
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public int getNextIndex() {
-		return this.next;
+		this.lock.lock();
+		try {
+			return this.next;
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
 	public float getNextTime() {
-		if(this.frameTimes != null) return this.frameTimes[this.next];
-		return ((float)this.next) * (1.0f/this.frameRate);
+		this.lock.lock();
+		try {
+			if(this.frameTimes != null) return this.frameTimes[this.next];
+			return ((float)this.next) * (1.0f/this.frameRate);
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
@@ -179,7 +219,12 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 
 	@Override
 	public float getTime() {
-		return this.time;
+		this.lock.lock();
+		try {
+			return this.time;
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	@Override
@@ -212,17 +257,17 @@ public class MD5Anim extends AbstractObservable implements Serializable, IMD5Ani
 		this.frameTimes = ic.readFloatArray("FrameTimes", null);
 		this.animationTime = ic.readFloat("AnimationTime", 0);
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.name;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return this.name.hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object object) {
 		if(object == this) return true;

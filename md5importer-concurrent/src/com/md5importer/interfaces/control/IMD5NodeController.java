@@ -28,19 +28,21 @@ import com.md5importer.interfaces.model.IMD5Anim;
  * method is invoked. This implied that the controller itself does
  * not require any external update invocation. It automatically
  * performs the synchronization operation whenever the animation
- * is modified.
+ * is modified. In fact <code>IMD5NodeController</code> does not
+ * respond to <code>update</code> invocation.
  * <p>
- * <code>IMD5NodeController</code> only provides primitive level of
- * thread safety meaning that it only guarantees the visibility of
- * the newly set active animation. There is no locking performed on
- * any of the methods to allow maximum concurrency. However it is
- * advised to only invoke <code>update</code> within a single thread.
- * The <code>getActiveAnim</code> is thread safe in the sense
- * that it always reflects the most recently set active animation.
+ * <code>IMD5NodeController</code> uses <code>ReentrantLock</code>
+ * to guard the observer update method to prevent interleaving
+ * invocations from multiple animation updating threads. Although,
+ * it is advised to update all the animations associated with the
+ * controlled node in a single thread. This lock guarantees that
+ * the mesh is updated based on a single animation at once. There
+ * is no locking performed on <code>setActiveAnim</code> to allow
+ * maximum concurrency. It does provide memory visibility. 
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:21 EST
- * @version Modified date: 03-25-2009 18:46 EST
+ * @version Modified date: 03-27-2009 17:55 EST
  */
 public interface IMD5NodeController extends IController, IObserver {
 	

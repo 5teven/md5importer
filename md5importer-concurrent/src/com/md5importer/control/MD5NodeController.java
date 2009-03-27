@@ -1,5 +1,7 @@
 package com.md5importer.control;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.md5importer.interfaces.IObservable;
@@ -22,7 +24,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:13 EST
- * @version Modified date: 03-25-2009 18:44 EST
+ * @version Modified date: 03-27-2009 17:57 EST
  */
 public class MD5NodeController extends AbstractController implements IMD5NodeController {
 	/**
@@ -46,6 +48,10 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 */
 	private final Quaternion orientation;
 	/**
+	 * The update <code>ReentrantLock</code>.
+	 */
+	private final ReentrantLock lock;
+	/**
 	 * The current active <code>IMD5Anim</code>.
 	 */
 	private volatile IMD5Anim activeAnim;
@@ -60,6 +66,7 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 		this.meshes = node.getMeshes();
 		this.translation = new Vector3f();
 		this.orientation = new Quaternion();
+		this.lock = new ReentrantLock();
 	}
 
 	@Override
@@ -68,9 +75,15 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	@Override
 	public void update(IObservable observable) {
 		if(observable == null || !this.active) return;
-		IMD5Anim anim = (IMD5Anim)observable;
-		this.updateJoints(this.interpolation(anim), anim.getPreviousFrame(), anim.getNextFrame());
-		this.updateMeshes();
+		// Lock to prevent multiple animation updates interleaving.
+		this.lock.lock();
+		try {
+			final IMD5Anim anim = (IMD5Anim)observable;
+			this.updateJoints(this.interpolation(anim), anim.getPreviousFrame(), anim.getNextFrame());
+			this.updateMeshes();
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	/**
@@ -124,7 +137,7 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 
 	@Override
 	public void setActiveAnim(IMD5Anim anim) {
-		if(anim == null) return;
+		if(anim == null || anim == this.activeAnim) return;
 		// Validate animation first.
 		if(!this.validateAnim(anim)) throw new IllegalArgumentException("Invalid animation: " + anim.getName());
 		// Unregister from the previous animation.
