@@ -11,7 +11,7 @@ import com.md5importer.interfaces.model.IMD5Anim;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 18:14 EST
- * @version Modified date: 03-27-2009 19:20 EST
+ * @version Modified date: 04-01-2009 18:38 EST
  */
 public class MD5AnimController extends AbstractController implements IMD5AnimController {
 	/**
@@ -59,13 +59,17 @@ public class MD5AnimController extends AbstractController implements IMD5AnimCon
 		// Reset complete flag if repeat type is not clamp.
 		if(this.complete && this.repeat != ERepeatType.Clamp) this.complete = false;
 		if(this.complete) return;
+		// Record last frame.
+		final int lastPrev = this.anim.getPreviousIndex();
+		final int lastNext = this.anim.getNextIndex();
+		// Update frames.
 		switch(this.repeat) {
 		case Clamp: this.updateClamp(interpolation); break;
 		case Cycle: this.updateCycle(interpolation); break;
 		case Wrap: this.updateWrap(interpolation); break;
 		}
-		// Notify update.
-		this.anim.notifyUpdate();
+		// Notify update if frame changed.
+		if(lastPrev != this.anim.getPreviousIndex() || lastNext != this.anim.getNextIndex()) this.anim.notifyUpdate();
 	}
 
 	/**
