@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.net.URL;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.OrientedBoundingBox;
@@ -75,11 +77,18 @@ public class Mesh implements Serializable, Savable {
 	 * The generated <code>TriangleBatch</code> of this <code>Mesh</code>.
 	 */
 	private TriangleBatch triangleBatch;
+	/**
+	 * The temporary <code>List</code> of <code>IVertex</code>
+	 * for averaging normal calculation.
+	 */
+	private final List<Vertex> tempVertices;
 
 	/**
 	 * Default constructor of <code>Mesh</code>.
 	 */
-	public Mesh() {}
+	public Mesh() {
+		this.tempVertices = new ArrayList<Vertex>();
+	}
 
 	/**
 	 * Constructor of <code>Mesh</code>.
@@ -87,6 +96,7 @@ public class Mesh implements Serializable, Savable {
 	 */
 	public Mesh(ModelNode modelNode) {
 		this.modelNode = modelNode;
+		this.tempVertices = new ArrayList<Vertex>();
 	}
 
 	/**
@@ -150,6 +160,39 @@ public class Mesh implements Serializable, Savable {
 		for(int i = 0; i < this.triangles.length; i++) {
 			this.triangles[i].processNormal();
 		}
+		// Average vertex normals with same vertex positions.
+		this.tempVertices.clear();
+		for(int i = 0; i < this.vertices.length; i++) {
+			final Vertex v1 = this.vertices[i];
+			this.tempVertices.add(v1);
+			// Find all vertices with same position.
+			for(int j = 0; j < this.vertices.length; j++) {
+				final Vertex v2 = this.vertices[j];
+				if(v1 != v2 && v2.getPosition().equals(v1.getPosition())) {
+					this.tempVertices.add(v2);
+				}
+			}
+			// Average vertices in list.
+			float x = 0;
+			float y = 0;
+			float z = 0;
+			for(Vertex vertex : this.tempVertices) {
+				x += vertex.getNormal().getX();
+				y += vertex.getNormal().getY();
+				z += vertex.getNormal().getZ();
+			}
+			final int size = this.tempVertices.size();
+			x = x / size;
+			y = y / size;
+			z = z / size;
+			for(Vertex vertex : this.tempVertices) {
+				vertex.getNormal().set(x, y, z);
+				vertex.getNormal().normalizeLocal();
+			}
+			// Clear out this group.
+			this.tempVertices.clear();
+		}
+		// Put into buffer.
 		FloatBuffer normalBuffer = this.triangleBatch.getNormalBuffer();
 		if(normalBuffer == null) normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
 		normalBuffer.clear();
