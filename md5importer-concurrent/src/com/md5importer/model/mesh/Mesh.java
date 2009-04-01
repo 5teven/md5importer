@@ -48,7 +48,7 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 02-28-2009 18:35 EST
+ * @version Modified date: 04-01-2009 17:43 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -190,6 +190,23 @@ public class Mesh extends TriMesh implements IMesh {
 			this.triangles[i].processNormal();
 		}
 		// Average vertex normals with same vertex positions.
+		this.averageNormal();
+		// Put into buffer.
+		FloatBuffer normalBuffer = this.getNormalBuffer();
+		if(normalBuffer == null) {
+			normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
+			this.setNormalBuffer(normalBuffer);
+		}
+		normalBuffer.clear();
+		for(int i = 0; i < this.vertices.length; i++) {
+			BufferUtils.setInBuffer(this.vertices[i].getNormal(), normalBuffer, i);
+		}
+	}
+	
+	/**
+	 * Average normals for vertices with same position.
+	 */
+	private void averageNormal() {
 		this.tempVertices.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
 			final IVertex v1 = this.vertices[i];
@@ -220,16 +237,6 @@ public class Mesh extends TriMesh implements IMesh {
 			}
 			// Clear out this group.
 			this.tempVertices.clear();
-		}
-		// Put into buffer.
-		FloatBuffer normalBuffer = this.getNormalBuffer();
-		if(normalBuffer == null) {
-			normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
-			this.setNormalBuffer(normalBuffer);
-		}
-		normalBuffer.clear();
-		for(int i = 0; i < this.vertices.length; i++) {
-			BufferUtils.setInBuffer(this.vertices[i].getNormal(), normalBuffer, i);
 		}
 	}
 
