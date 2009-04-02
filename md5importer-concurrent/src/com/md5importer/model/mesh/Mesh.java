@@ -48,7 +48,7 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 04-01-2009 17:43 EST
+ * @version Modified date: 04-02-2009 16:38 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -360,9 +360,15 @@ public class Mesh extends TriMesh implements IMesh {
 			String specularRaw = specularMap.getImageLocation();
 			oc.write(specularRaw.substring(specularRaw.indexOf("/"), specularRaw.length()), "SpecularMap", null);
 		}
+		// Write out primitives.
 		oc.write(this.vertices, "Vertices", null);
 		oc.write(this.triangles, "Triangles", null);
 		oc.write(this.weights, "Weights", null);
+		// Write out settings.
+		oc.write(this.anisotropic, "Anisotropic", 0);
+		oc.write(this.miniFilter.name(), "MinFilter", null);
+		oc.write(this.magFilter.name(), "MagFilter", null);
+		oc.write(this.orientedBounding, "OrientedBounding", false);
 	}
 
 	@Override
@@ -370,9 +376,11 @@ public class Mesh extends TriMesh implements IMesh {
 		super.read(im);
 		Savable[] temp = null;
 		InputCapsule ic = im.getCapsule(this);
+		// Read in texture map locations.
 		this.color = ic.readString("ColorMap", null);
 		this.normal = ic.readString("NormalMap", null);
 		this.specular = ic.readString("SpecularMap", null);
+		// Read in primitives.
 		temp = ic.readSavableArray("Vertices", null);
 		this.vertices = new IVertex[temp.length];
 		for(int i = 0; i < temp.length; i++) {
@@ -388,6 +396,11 @@ public class Mesh extends TriMesh implements IMesh {
 		for(int i = 0; i < temp.length; i++) {
 			this.weights[i] = (IWeight)temp[i];
 		}
+		// Read in settings.
+		this.anisotropic = ic.readInt("Anisotropic", 0);
+		this.miniFilter = MinificationFilter.valueOf(ic.readString("MinFilter", null));
+		this.magFilter = MagnificationFilter.valueOf(ic.readString("MagFilter", null));
+		this.orientedBounding = ic.readBoolean("OrientedBounding", false);
 	}
 
 	@Override
