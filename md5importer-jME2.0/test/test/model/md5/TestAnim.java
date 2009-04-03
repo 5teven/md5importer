@@ -44,6 +44,5 @@ public class TestAnim extends Test{
 	protected void setupGame() {
 		MD5Node node = (MD5Node)this.rootNode.getChild("ModelNode");
 		node.setLocalScale(1);
-		node.getController(0).setSpeed(2f);
 	}
 }
