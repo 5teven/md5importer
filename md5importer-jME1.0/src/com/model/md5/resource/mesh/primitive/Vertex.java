@@ -28,7 +28,7 @@ import com.model.md5.resource.mesh.Mesh;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 06-10-2008 15:15 EST
+ * @version Modified date: 04-03-2009 17:47 EST
  */
 public class Vertex implements Serializable, Savable {
 	/**
@@ -55,6 +55,10 @@ public class Vertex implements Serializable, Savable {
 	 * The normal of this <code>Vertex</code>.
 	 */
 	private Vector3f normal;
+	/**
+	 * The referenced <code>Vector3f</code> normal.
+	 */
+	private Vector3f normalRef;
 	/**
 	 * The position of this <code>Vertex</code>.
 	 */
@@ -98,7 +102,8 @@ public class Vertex implements Serializable, Savable {
 	 * Reset the normal and position information of this <code>Vertex</code>.
 	 */
 	public void resetInformation() {
-		this.normal.zero();
+		if(this.normal != null) this.normal.zero();
+		if(this.normalRef != null) this.normalRef.zero();
 		this.position.zero();
 	}
 
@@ -138,9 +143,22 @@ public class Vertex implements Serializable, Savable {
 	 * @param normal The normal <code>Vector3f</code> to be set.
 	 */
 	public void setNormal(Vector3f normal) {
+		// Use normal reference if possible.
+		if(this.normalRef != null) {
+			this.normalRef.addLocal(normal);
+			return;
+		}
 		if(this.normal == null) this.normal = new Vector3f(normal);
 		// If this vertex has been used, add the new value.
 		else this.normal.addLocal(normal);
+	}
+	
+	/**
+	 * Set this vertex to directly use the given reference as normal.
+	 * @param normal The <code>Vector3f</code> normal reference.
+	 */
+	public void setNormalReference(Vector3f normal) {
+		this.normalRef = normal;
 	}
 
 	/**
@@ -172,7 +190,7 @@ public class Vertex implements Serializable, Savable {
 	 * @return The <code>Vector3f</code> normal of this <code>Vertex</code>.
 	 */
 	public Vector3f getNormal() {
-		return this.normal;
+		return (this.normalRef != null) ? this.normalRef : this.normal;
 	}
 
 	@Override

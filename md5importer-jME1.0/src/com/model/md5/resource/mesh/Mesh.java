@@ -11,6 +11,7 @@ import java.util.List;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.OrientedBoundingBox;
 import com.jme.image.Texture;
+import com.jme.math.Vector3f;
 import com.jme.scene.SceneElement;
 import com.jme.scene.batch.TriangleBatch;
 import com.jme.scene.state.TextureState;
@@ -46,7 +47,7 @@ import com.model.md5.resource.mesh.primitive.Weight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 06-10-2008 15:18 EST
+ * @version Modified date: 04-03-2009 17:51 EST
  */
 public class Mesh implements Serializable, Savable {
 	/**
@@ -107,7 +108,7 @@ public class Mesh implements Serializable, Savable {
 		this.triangleBatch.setNormalsMode(SceneElement.NM_GL_NORMALIZE_PROVIDED);
 		this.processIndex();
 		this.processVertex();
-		this.processNormal();
+		this.processNormal(true);
 		this.processTexture();
 		this.processBounding();
 	}
@@ -116,11 +117,8 @@ public class Mesh implements Serializable, Savable {
 	 * Update the <code>TriangleBatch</code> vertex and normal buffer.
 	 */
 	public void updateBatch() {
-		for(int i = 0; i < this.vertices.length; i++) {
-			this.vertices[i].resetInformation();
-		}
 		this.processVertex();
-		this.processNormal();
+		this.processNormal(false);
 		this.triangleBatch.updateModelBound();
 	}
 
@@ -147,6 +145,7 @@ public class Mesh implements Serializable, Savable {
 		if(vertexBuffer == null) vertexBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
 		vertexBuffer.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
+			this.vertices[i].resetInformation();
 			this.vertices[i].processPosition();
 			BufferUtils.setInBuffer(this.vertices[i].getPosition(), vertexBuffer, i);
 		}
@@ -155,12 +154,29 @@ public class Mesh implements Serializable, Savable {
 
 	/**
 	 * Process and setup the normal position buffer.
+	 * @param init The <code>Boolean</code> initialization flag.
 	 */
-	private void processNormal() {
+	private void processNormal(boolean init) {
+		// Triangles have to process the normal first in case the vertices are not in order.
 		for(int i = 0; i < this.triangles.length; i++) {
 			this.triangles[i].processNormal();
 		}
 		// Average vertex normals with same vertex positions.
+		if(init) this.averageNormal();
+		// Put into buffer.
+		FloatBuffer normalBuffer = this.triangleBatch.getNormalBuffer();
+		if(normalBuffer == null) normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
+		normalBuffer.clear();
+		for(int i = 0; i < this.vertices.length; i++) {
+			BufferUtils.setInBuffer(this.vertices[i].getNormal(), normalBuffer, i);
+		}
+		this.triangleBatch.setNormalBuffer(normalBuffer);
+	}
+	
+	/**
+	 * Average normals for vertices with same position.
+	 */
+	private void averageNormal() {
 		this.tempVertices.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
 			final Vertex v1 = this.vertices[i];
@@ -185,21 +201,14 @@ public class Mesh implements Serializable, Savable {
 			x = x / size;
 			y = y / size;
 			z = z / size;
+			final Vector3f sharedNormal = new Vector3f(x, y, z);
+			sharedNormal.normalizeLocal();
 			for(Vertex vertex : this.tempVertices) {
-				vertex.getNormal().set(x, y, z);
-				vertex.getNormal().normalizeLocal();
+				vertex.setNormalReference(sharedNormal);
 			}
 			// Clear out this group.
 			this.tempVertices.clear();
 		}
-		// Put into buffer.
-		FloatBuffer normalBuffer = this.triangleBatch.getNormalBuffer();
-		if(normalBuffer == null) normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
-		normalBuffer.clear();
-		for(int i = 0; i < this.vertices.length; i++) {
-			BufferUtils.setInBuffer(this.vertices[i].getNormal(), normalBuffer, i);
-		}
-		this.triangleBatch.setNormalBuffer(normalBuffer);
 	}
 
 	/**
