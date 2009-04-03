@@ -1,7 +1,8 @@
 package com.md5importer.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
@@ -26,7 +27,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 03-25-2009 18:07 EST
+ * @version Modified date: 04-03-2009 13:42 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -46,15 +47,16 @@ public class MD5Node extends Node implements IMD5Node {
 	 */
 	private IMesh[] meshes;
 	/**
-	 * The <code>ArrayList</code> of dependent <code>IMD5Node</code>.
+	 * The <code>List</code> of dependent <code>IMD5Node</code>.
 	 */
-	private ArrayList<IMD5Node> dependents;
+	private final List<IMD5Node> dependents;
 
 	/**
 	 * Constructor of <code>MD5Node</code>.
 	 */
 	public MD5Node() {
 		super();
+		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
 	/**
@@ -65,7 +67,7 @@ public class MD5Node extends Node implements IMD5Node {
 		super(name);
 		this.joints = joints;
 		this.meshes = meshes;
-		this.dependents = new ArrayList<IMD5Node>();
+		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
 	@Override
@@ -202,6 +204,7 @@ public class MD5Node extends Node implements IMD5Node {
 
 	@Override
 	public void write(JMEExporter ex) throws IOException {
+		// Detach meshes before export.
 		for(int i = 0; i < this.meshes.length; i++) {
 			this.detachChild((Spatial)this.meshes[i]);
 		}
@@ -210,14 +213,20 @@ public class MD5Node extends Node implements IMD5Node {
 		oc.write(this.dependent, "Dependent", false);
 		oc.write(this.joints, "Joints", null);
 		oc.write(this.meshes, "Meshes", null);
-		oc.writeSavableArrayList(this.dependents, "Dependents", null);
+		IMD5Node[] array = new IMD5Node[this.dependents.size()];
+		int n = 0;
+		for(IMD5Node child : this.dependents) {
+			array[n] = child;
+			n++;
+		}
+		oc.write(array, "Dependents", null);
+		// Attach meshes back.
 		for(int i = 0; i < this.meshes.length; i++) {
 			this.attachChild((Spatial)this.meshes[i]);
 		}
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void read(JMEImporter im) throws IOException {
 		super.read(im);
 		InputCapsule ic = im.getCapsule(this);
@@ -233,7 +242,10 @@ public class MD5Node extends Node implements IMD5Node {
 		for(int i = 0; i < temp.length; i++) {
 			this.meshes[i] = (IMesh)temp[i];
 		}
-		this.dependents = ic.readSavableArrayList("Dependents", null);
+		Savable[] array = ic.readSavableArray("Dependents", null);
+		for(Savable child : array) {
+			this.dependents.add((IMD5Node)child);
+		}
 		this.initialize();
 	}
 
