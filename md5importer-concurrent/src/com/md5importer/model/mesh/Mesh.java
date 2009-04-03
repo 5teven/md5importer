@@ -15,6 +15,7 @@ import com.jme.bounding.OrientedBoundingBox;
 import com.jme.image.Texture;
 import com.jme.image.Texture.MagnificationFilter;
 import com.jme.image.Texture.MinificationFilter;
+import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
@@ -135,18 +136,15 @@ public class Mesh extends TriMesh implements IMesh {
 		this.setNormalsMode(Spatial.NormalsMode.AlwaysNormalize);
 		this.processIndex();
 		this.processVertex();
-		this.processNormal();
+		this.processNormal(true);
 		this.processTexture();
 		this.processBounding();
 	}
-
+	
 	@Override
 	public void updateMesh() {
-		for(IVertex vertex : this.vertices) {
-			vertex.resetInformation();
-		}
 		this.processVertex();
-		this.processNormal();
+		this.processNormal(false);
 		this.updateModelBound();
 	}
 
@@ -176,6 +174,7 @@ public class Mesh extends TriMesh implements IMesh {
 		}
 		vertexBuffer.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
+			this.vertices[i].resetInformation();
 			this.vertices[i].processPosition();
 			BufferUtils.setInBuffer(this.vertices[i].getPosition(), vertexBuffer, i);
 		}
@@ -183,14 +182,15 @@ public class Mesh extends TriMesh implements IMesh {
 
 	/**
 	 * Process and setup the normal position buffer.
+	 * @param init The <code>Boolean</code> initialization flag.
 	 */
-	private void processNormal() {
+	private void processNormal(boolean init) {
 		// Triangles have to process the normal first in case the vertices are not in order.
 		for(int i = 0; i < this.triangles.length; i++) {
 			this.triangles[i].processNormal();
 		}
 		// Average vertex normals with same vertex positions.
-		this.averageNormal();
+		if(init) this.averageNormal();
 		// Put into buffer.
 		FloatBuffer normalBuffer = this.getNormalBuffer();
 		if(normalBuffer == null) {
@@ -231,9 +231,10 @@ public class Mesh extends TriMesh implements IMesh {
 			x = x / size;
 			y = y / size;
 			z = z / size;
+			final Vector3f sharedNormal = new Vector3f(x, y, z);
+			sharedNormal.normalizeLocal();
 			for(IVertex vertex : this.tempVertices) {
-				vertex.getNormal().set(x, y, z);
-				vertex.getNormal().normalizeLocal();
+				vertex.setNormalReference(sharedNormal);
 			}
 			// Clear out this group.
 			this.tempVertices.clear();

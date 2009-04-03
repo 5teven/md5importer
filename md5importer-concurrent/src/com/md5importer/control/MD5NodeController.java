@@ -106,12 +106,12 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 */
 	private void updateMeshes() {
 		// Update mesh geometric information.
-		for(IMesh mesh : this.meshes) mesh.updateMesh();
+		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].updateMesh();
 		// Update dependent children.
 		final Iterable<IMD5Node> children = this.node.getDependents();
 		for(IMD5Node child : children) {
 			final IMesh[] meshes = child.getMeshes();
-			for(final IMesh mesh : meshes) mesh.updateMesh();
+			for(int i = 0; i < meshes.length; i++) meshes[i].updateMesh();
 		}
 	}
 
