@@ -14,7 +14,7 @@ import com.jme.util.export.Savable;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 20:50 EST
- * @version Modified date: 11-18-2008 22:43 EST
+ * @version Modified date: 04-03-2009 17:38 EST
  */
 public interface IVertex extends Savable {
 
@@ -52,6 +52,12 @@ public interface IVertex extends Savable {
 	 * @param normal The normal <code>Vector3f</code> to be set.
 	 */
 	public void setNormal(Vector3f normal);
+	
+	/**
+	 * Set this vertex to directly use the given reference as normal.
+	 * @param normal The <code>Vector3f</code> normal reference.
+	 */
+	public void setNormalReference(Vector3f normal);
 
 	/**
 	 * Retrieve the texture coordinates of this vertex.

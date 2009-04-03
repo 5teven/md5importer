@@ -32,7 +32,7 @@ public class TestMeshClone extends TestMeshImport {
 		end = System.nanoTime();
 		this.headclonetime = (end - start)/1000000.0;
 		this.bodyclone.attachChild(this.headclone, "Shoulders");
-		((Spatial)this.bodyclone).setLocalTranslation(0, -30, -100);
+		((Spatial)this.bodyclone).setLocalTranslation(50, -40, -300);
 		this.rootNode.attachChild((Spatial)this.bodyclone);
 		this.printResult();
 	}

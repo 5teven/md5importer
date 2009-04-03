@@ -23,7 +23,7 @@ import com.model.md5.interfaces.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 11-18-2008 22:55 EST
+ * @version Modified date: 04-03-2009 17:39 EST
  */
 public class Vertex implements Serializable, IVertex {
 	/**
@@ -50,6 +50,10 @@ public class Vertex implements Serializable, IVertex {
 	 * The <code>Vector3f</code> normal.
 	 */
 	private Vector3f normal;
+	/**
+	 * The referenced <code>Vector3f</code> normal.
+	 */
+	private Vector3f normalRef;
 	/**
 	 * The <code>Vector3f</code> position.
 	 */
@@ -108,7 +112,8 @@ public class Vertex implements Serializable, IVertex {
 
 	@Override
 	public void resetInformation() {
-		this.normal.zero();
+		if(this.normal != null) this.normal.zero();
+		if(this.normalRef != null) this.normalRef.zero();
 		this.position.zero();
 	}
 
@@ -134,9 +139,19 @@ public class Vertex implements Serializable, IVertex {
 
 	@Override
 	public void setNormal(Vector3f normal) {
+		// Use normal reference if possible.
+		if(this.normalRef != null) {
+			this.normalRef.addLocal(normal);
+			return;
+		}
 		if(this.normal == null) this.normal = new Vector3f(normal);
 		// If this vertex has been used, add the new value.
 		else this.normal.addLocal(normal);
+	}
+	
+	@Override
+	public void setNormalReference(Vector3f normal) {
+		this.normalRef = normal;
 	}
 
 	@Override
@@ -156,7 +171,7 @@ public class Vertex implements Serializable, IVertex {
 
 	@Override
 	public Vector3f getNormal() {
-		return this.normal;
+		return (this.normalRef != null) ? this.normalRef : this.normal;
 	}
 
 	@Override
@@ -178,6 +193,7 @@ public class Vertex implements Serializable, IVertex {
 		oc.write(this.weights, "Weights", null);
 		oc.write(this.usedTimes, "UsedTimes", 0);
 		oc.write(this.normal, "Normal", null);
+		oc.write(this.normalRef, "NormalRef", null);
 		oc.write(this.position, "Position", null);
 	}
 
@@ -191,6 +207,7 @@ public class Vertex implements Serializable, IVertex {
 		for(int i = 0; i < this.weights.length; i++) this.weights[i] = (IWeight)temp[i];
 		this.usedTimes = ic.readInt("UsedTimes", 0);
 		this.normal = (Vector3f)ic.readSavable("Normal", null);
+		this.normalRef = (Vector3f)ic.readSavable("NormalRef", null);
 		this.position = (Vector3f)ic.readSavable("Position", null);
 	}
 
