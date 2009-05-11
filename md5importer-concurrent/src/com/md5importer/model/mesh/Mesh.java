@@ -49,13 +49,17 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 05-10-2009 17:46 EST
+ * @version Modified date: 05-11-2009 18:29 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
 	 * Serial version.
 	 */
 	private static final long serialVersionUID = -6431941710991131243L;
+	/**
+	 * The special <code>String</code> texture extension.
+	 */
+	private static String extension;
 	/**
 	 * The <code>String</code> color map file name.
 	 */
@@ -273,11 +277,24 @@ public class Mesh extends TriMesh implements IMesh {
 			this.setRenderState(state);
 		}
 		// Set color map.
-		if(this.color != null) state.setTexture(this.loadTexture(this.color, maxU, maxV), 0);
+		if(this.color != null) this.loadSetMap(this.color, state, maxU, maxV, 0);
 		// Set normal map.
-		if(this.normal != null) state.setTexture(this.loadTexture(this.normal, maxU, maxV), 1);
+		if(this.normal != null) this.loadSetMap(this.normal, state, maxU, maxV, 1);
 		// Set specular map.
-		if(this.specular != null) state.setTexture(this.loadTexture(this.specular, maxU, maxV), 2);
+		if(this.specular != null) this.loadSetMap(this.specular, state, maxU, maxV, 2);
+	}
+	
+	/**
+	 * Load and set the texture map at given unit to given state.
+	 * @param map The <code>String</code> map path.
+	 * @param state The <code>TextureState</code> to be set to.
+	 * @param maxU The <code>Float</code> maximum U coordinate.
+	 * @param maxV The <code>Float</code> maximum V coordinate.
+	 * @param unit The <code>Integer</code> texture unit to set to.
+	 */
+	private void loadSetMap(String map, TextureState state, float maxU, float maxV, int unit) {
+		if(Mesh.extension != null && Mesh.extension.length() > 0) state.setTexture(this.loadTexture(this.buildPath(map), maxU, maxV), unit);
+		else state.setTexture(this.loadTexture(map, maxU, maxV));
 	}
 
 	/**
@@ -314,6 +331,16 @@ public class Mesh extends TriMesh implements IMesh {
 		}
 		return map;
 	}
+	
+	/**
+	 * Build a texture path with specified extension and original path.
+	 * @param original The <code>String</code> original texture path.
+	 * @return The <code>String</code> texture path with proper extension.
+	 */
+	private String buildPath(String original) {
+		final StringBuilder builder = new StringBuilder();
+		return builder.append(original.substring(0, original.lastIndexOf("."))).append(Mesh.extension).toString();
+	}
 
 	/**
 	 * Process and setup the bounding volume of the <code>Mesh</code>.
@@ -343,6 +370,14 @@ public class Mesh extends TriMesh implements IMesh {
 		for(IWeight weight : this.weights) {
 			weight.setJoint(joints[weight.getJoint().getIndex()]);
 		}
+	}
+	
+	/**
+	 * Set the texture extension to use.
+	 * @param extension The <code>String</code> extension.
+	 */
+	public static void setExtension(String extension) {
+		Mesh.extension = extension;
 	}
 
 	@Override
