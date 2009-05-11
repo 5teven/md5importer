@@ -51,6 +51,7 @@ public class TestFading extends TestAnim {
 	}
 
 	protected void simpleUpdate() {
+		super.simpleUpdate();
 		if(KeyBindingManager.getKeyBindingManager().isValidCommand("fade", false)) {
 			if(this.bodyController.getActiveAnim().getName().equals("walk")) {
 				this.walkAnimController.setActive(false);

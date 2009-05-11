@@ -57,6 +57,13 @@ public class TestAnimImport extends TestMeshImport {
 		}
 	}
 	
+	@Override
+	protected void simpleUpdate() {
+		super.simpleUpdate();
+		this.body.swapBuffers();
+		this.head.swapBuffers();
+	}
+	
 	protected void cleanup() {
 		super.cleanup();
 		this.updater.stop();

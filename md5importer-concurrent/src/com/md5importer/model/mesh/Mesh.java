@@ -49,7 +49,7 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 04-02-2009 16:38 EST
+ * @version Modified date: 05-10-2009 17:46 EST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -101,6 +101,14 @@ public class Mesh extends TriMesh implements IMesh {
 	 * with same positions to average normal.
 	 */
 	private final List<IVertex> tempVertices;
+	/**
+	 * The back vertex <code>FloatBuffer</code> for updating.
+	 */
+	private FloatBuffer backVertexBuffer;
+	/**
+	 * The back normal <code>FloatBuffer</code> for updating.
+	 */
+	private FloatBuffer backNormalBuffer;
 
 	/**
 	 * Constructor of <code>Mesh</code>.
@@ -109,7 +117,7 @@ public class Mesh extends TriMesh implements IMesh {
 		super();
 		this.tempVertices = new ArrayList<IVertex>(32);
 	}
-	
+
 	/**
 	 * Constructor of <code>Mesh</code>.
 	 * @param texture The <code>String</code> texture file name without extension.
@@ -119,6 +127,7 @@ public class Mesh extends TriMesh implements IMesh {
 	 */
 	public Mesh(String texture, IVertex[] vertices, ITriangle[] triangles, IWeight[] weights, int anisotropic, MinificationFilter miniFilter,
 			MagnificationFilter magFilter, boolean orientedBounding) {
+		this();
 		this.color = texture;
 		this.vertices = vertices;
 		this.triangles = triangles;
@@ -127,7 +136,6 @@ public class Mesh extends TriMesh implements IMesh {
 		this.miniFilter = miniFilter;
 		this.magFilter = magFilter;
 		this.orientedBounding = orientedBounding;
-		this.tempVertices = new ArrayList<IVertex>(32);
 	}
 
 	@Override
@@ -140,7 +148,7 @@ public class Mesh extends TriMesh implements IMesh {
 		this.processTexture();
 		this.processBounding();
 	}
-	
+
 	@Override
 	public void updateMesh() {
 		this.processVertex();
@@ -167,16 +175,16 @@ public class Mesh extends TriMesh implements IMesh {
 	 * Process and setup the vertex position buffer.
 	 */
 	private void processVertex() {
-		FloatBuffer vertexBuffer = this.getVertexBuffer();
-		if(vertexBuffer == null) {
-			vertexBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
-			this.setVertexBuffer(vertexBuffer);
+		if(this.getVertexBuffer() == null) {
+			final FloatBuffer frontBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
+			this.setVertexBuffer(frontBuffer);
+			this.backVertexBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
 		}
-		vertexBuffer.clear();
+		this.backVertexBuffer.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
 			this.vertices[i].resetInformation();
 			this.vertices[i].processPosition();
-			BufferUtils.setInBuffer(this.vertices[i].getPosition(), vertexBuffer, i);
+			BufferUtils.setInBuffer(this.vertices[i].getPosition(), this.backVertexBuffer, i);
 		}
 	}
 
@@ -192,17 +200,17 @@ public class Mesh extends TriMesh implements IMesh {
 		// Average vertex normals with same vertex positions.
 		if(init) this.averageNormal();
 		// Put into buffer.
-		FloatBuffer normalBuffer = this.getNormalBuffer();
-		if(normalBuffer == null) {
-			normalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
-			this.setNormalBuffer(normalBuffer);
+		if(this.getNormalBuffer() == null) {
+			FloatBuffer frontBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
+			this.setNormalBuffer(frontBuffer);
+			this.backNormalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
 		}
-		normalBuffer.clear();
+		this.backNormalBuffer.clear();
 		for(int i = 0; i < this.vertices.length; i++) {
-			BufferUtils.setInBuffer(this.vertices[i].getNormal(), normalBuffer, i);
+			BufferUtils.setInBuffer(this.vertices[i].getNormal(), this.backNormalBuffer, i);
 		}
 	}
-	
+
 	/**
 	 * Average normals for vertices with same position.
 	 */
@@ -257,7 +265,7 @@ public class Mesh extends TriMesh implements IMesh {
 			index++;
 		}
 		this.setTextureCoords(new TexCoords(textureBuffer));
-		
+
 		// Get texture state.
 		TextureState state = (TextureState)this.getRenderState(StateType.Texture);
 		if(state == null) {
@@ -271,7 +279,7 @@ public class Mesh extends TriMesh implements IMesh {
 		// Set specular map.
 		if(this.specular != null) state.setTexture(this.loadTexture(this.specular, maxU, maxV), 2);
 	}
-	
+
 	/**
 	 * Load the texture linked by given file and set its wrap modes based on given values.
 	 * @param file The <code>String</code> file location.
@@ -315,6 +323,19 @@ public class Mesh extends TriMesh implements IMesh {
 		else this.setModelBound(new BoundingBox());
 		this.updateModelBound();
 		this.updateGeometricState(0, true);
+	}
+
+	@Override
+	public void swapBuffer() {
+		// Retrieve current front buffer.
+		final FloatBuffer oldFrontVertexBuffer = this.vertBuf;
+		final FloatBuffer oldFrontNormalBuffer = this.normBuf;
+		// Set back buffer to be front buffer.
+		this.vertBuf = this.backVertexBuffer;
+		this.normBuf = this.backNormalBuffer;
+		// Store old front buffer as back buffer.
+		this.backVertexBuffer = oldFrontVertexBuffer;
+		this.backNormalBuffer = oldFrontNormalBuffer;
 	}
 
 	@Override
@@ -402,6 +423,9 @@ public class Mesh extends TriMesh implements IMesh {
 		this.miniFilter = MinificationFilter.valueOf(ic.readString("MinFilter", null));
 		this.magFilter = MagnificationFilter.valueOf(ic.readString("MagFilter", null));
 		this.orientedBounding = ic.readBoolean("OrientedBounding", false);
+		// Create back buffers.
+		this.backVertexBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
+		this.backNormalBuffer = BufferUtils.createVector3Buffer(this.vertices.length);
 	}
 
 	@Override

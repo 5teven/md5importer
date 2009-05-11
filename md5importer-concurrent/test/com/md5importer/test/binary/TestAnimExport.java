@@ -38,6 +38,7 @@ public class TestAnimExport extends TestAnim {
 	
 	@Override
 	protected void simpleUpdate() {
+		super.simpleUpdate();
 		if(KeyBindingManager.getKeyBindingManager().isValidCommand("export", false)) {
 			this.export();
 		}

@@ -10,7 +10,6 @@ import com.md5importer.interfaces.model.IMD5Anim;
 import com.md5importer.interfaces.model.IMD5Node;
 import com.md5importer.interfaces.model.anim.IFrame;
 import com.md5importer.interfaces.model.mesh.IJoint;
-import com.md5importer.interfaces.model.mesh.IMesh;
 
 /**
  * <code>MD5NodeController</code> defines the concrete implementation
@@ -24,7 +23,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-23-2009 15:13 EST
- * @version Modified date: 03-27-2009 17:57 EST
+ * @version Modified date: 05-10-2009 21:13 EST
  */
 public class MD5NodeController extends AbstractController implements IMD5NodeController {
 	/**
@@ -35,10 +34,6 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	 * The array of <code>IJoint</code> in the node.
 	 */
 	private final IJoint[] joints;
-	/**
-	 * The array of <code>IMesh</code> in the node.
-	 */
-	private final IMesh[] meshes;
 	/**
 	 * The <code>Vector3f</code> temporary translation.
 	 */
@@ -63,7 +58,6 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 	public MD5NodeController(IMD5Node node) {
 		this.node = node;
 		this.joints = node.getJoints();
-		this.meshes = node.getMeshes();
 		this.translation = new Vector3f();
 		this.orientation = new Quaternion();
 		this.lock = new ReentrantLock();
@@ -80,7 +74,7 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 		try {
 			final IMD5Anim anim = (IMD5Anim)observable;
 			this.updateJoints(this.interpolation(anim), anim.getPreviousFrame(), anim.getNextFrame());
-			this.updateMeshes();
+			this.node.updateMeshes();
 		} finally {
 			this.lock.unlock();
 		}
@@ -98,20 +92,6 @@ public class MD5NodeController extends AbstractController implements IMD5NodeCon
 			this.orientation.slerp(prev.getOrientation(i), next.getOrientation(i), interpolation);
 			this.joints[i].updateTransform(this.translation, this.orientation);
 			this.joints[i].processRelative();
-		}
-	}
-
-	/**
-	 * Update the geometric information of all meshes in the node.
-	 */
-	private void updateMeshes() {
-		// Update mesh geometric information.
-		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].updateMesh();
-		// Update dependent children.
-		final Iterable<IMD5Node> children = this.node.getDependents();
-		for(IMD5Node child : children) {
-			final IMesh[] meshes = child.getMeshes();
-			for(int i = 0; i < meshes.length; i++) meshes[i].updateMesh();
 		}
 	}
 

@@ -11,7 +11,6 @@ import com.md5importer.interfaces.model.IMD5Anim;
 import com.md5importer.interfaces.model.IMD5Node;
 import com.md5importer.interfaces.model.anim.IFrame;
 import com.md5importer.interfaces.model.mesh.IJoint;
-import com.md5importer.interfaces.model.mesh.IMesh;
 
 /**
  * <code>BlendController</code> defines the concrete implementation
@@ -21,7 +20,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 03-25-2009 18:18 EST
- * @version Modified date: 03-25-2009 22:17 EST
+ * @version Modified date: 05-10-2009 21:24 EST
  */
 public class BlendController extends AbstractController implements IBlendController {
 	/**
@@ -32,10 +31,6 @@ public class BlendController extends AbstractController implements IBlendControl
 	 * The array of <code>IJoint</code> in the node.
 	 */
 	private final IJoint[] joints;
-	/**
-	 * The array of <code>IMesh</code> in the node.
-	 */
-	private final IMesh[] meshes;
 	/**
 	 * The <code>IMD5NodeController</code> for the node.
 	 */
@@ -89,7 +84,6 @@ public class BlendController extends AbstractController implements IBlendControl
 	public BlendController(IMD5Node node, IMD5NodeController controller) {
 		this.node = node;
 		this.joints = node.getJoints();
-		this.meshes = node.getMeshes();
 		this.nodeController = controller;
 		this.lock = new ReentrantLock();
 		this.recordTrans = new Vector3f[node.getJoints().length];
@@ -113,7 +107,7 @@ public class BlendController extends AbstractController implements IBlendControl
 			interpolation = this.time / this.duration;
 			// Update joints and meshes.
 			this.updateJoints(interpolation);
-			this.updateMeshes();
+			this.node.updateMeshes();
 			// Check for completion.
 			if(interpolation >= 1) {
 				this.completed = true;
@@ -134,20 +128,6 @@ public class BlendController extends AbstractController implements IBlendControl
 			this.orientation.slerp(this.recordOriens[i], this.frame.getOrientation(i), interpolation);
 			this.joints[i].updateTransform(this.translation, this.orientation);
 			this.joints[i].processRelative();
-		}
-	}
-	
-	/**
-	 * Update the geometric information of all meshes in the node.
-	 */
-	private void updateMeshes() {
-		// Update mesh geometric information.
-		for(IMesh mesh : this.meshes) mesh.updateMesh();
-		// Update dependent children.
-		final Iterable<IMD5Node> children = this.node.getDependents();
-		for(IMD5Node child : children) {
-			final IMesh[] meshes = child.getMeshes();
-			for(final IMesh mesh : meshes) mesh.updateMesh();
 		}
 	}
 	

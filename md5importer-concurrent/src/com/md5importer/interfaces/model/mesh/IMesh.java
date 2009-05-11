@@ -11,7 +11,7 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 20:12 EST
- * @version Modified date: 11-19-2008 17:10 EST
+ * @version Modified date: 05-10-2009 17:21 EST
  */
 public interface IMesh extends Savable {
 
@@ -25,6 +25,11 @@ public interface IMesh extends Savable {
 	 * Update this mesh and its geometric data.
 	 */
 	public void updateMesh();
+	
+	/**
+	 * Swap the vertex information buffers.
+	 */
+	public void swapBuffer();
 	
 	/**
 	 * Set this mesh to use the given joints.

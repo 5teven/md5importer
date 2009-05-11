@@ -101,6 +101,15 @@ public class TestAnimClone extends TestMeshClone {
 		System.out.println("Cloning head animation took: " + this.headanimclonetime + " millisecond\n");
 	}
 	
+	@Override
+	protected void simpleUpdate() {
+		super.simpleUpdate();
+		this.body.swapBuffers();
+		this.head.swapBuffers();
+		this.bodyclone.swapBuffers();
+		this.headclone.swapBuffers();
+	}
+	
 	protected void cleanup() {
 		super.cleanup();
 		this.updater.stop();

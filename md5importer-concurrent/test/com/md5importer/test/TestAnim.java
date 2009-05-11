@@ -26,6 +26,13 @@ public class TestAnim extends TestMesh {
 	protected ThreadedUpdater updater;
 	
 	@Override
+	protected void simpleUpdate() {
+		super.simpleUpdate();
+		this.body.swapBuffers();
+		this.head.swapBuffers();
+	}
+	
+	@Override
 	protected IMD5Node setupModel() {
 		try {
 			super.setupModel();

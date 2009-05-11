@@ -3,6 +3,8 @@ package com.md5importer.model;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
@@ -27,13 +29,21 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 04-03-2009 13:42 EST
+ * @version Modified date: 05-10-2009 23:16 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
 	 * Serial version.
 	 */
 	private static final long serialVersionUID = -2799207065296472869L;
+	/**
+	 * The update <code>Semaphore</code>.
+	 */
+	private final Semaphore updateSem;
+	/**
+	 * The swap <code>Semaphore</code>.
+	 */
+	private final Semaphore swapSem;
 	/**
 	 * The flag indicates if model node shares skeleton with its parent.
 	 */
@@ -56,6 +66,8 @@ public class MD5Node extends Node implements IMD5Node {
 	 */
 	public MD5Node() {
 		super();
+		this.updateSem = new Semaphore(0);
+		this.swapSem = new Semaphore(1);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -67,6 +79,8 @@ public class MD5Node extends Node implements IMD5Node {
 		super(name);
 		this.joints = joints;
 		this.meshes = meshes;
+		this.updateSem = new Semaphore(0);
+		this.swapSem = new Semaphore(1);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -86,6 +100,39 @@ public class MD5Node extends Node implements IMD5Node {
 			this.meshes[i].initialize(this.name);
 			this.attachChild((Spatial)this.meshes[i]);
 		}
+		this.swapBuffers();
+		this.updateMeshes();
+	}
+
+	@Override
+	public void updateMeshes() {
+		// Try to acquire update permit and wait for 100 nanoseconds before giving up.
+		try {
+			if(!this.updateSem.tryAcquire(100, TimeUnit.NANOSECONDS)) return;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// Update mesh geometric information.
+		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].updateMesh();
+		// Update dependent children.
+		for(final IMD5Node child : this.dependents) child.updateMeshes();
+		// Release swap permit.
+		this.swapSem.release();
+	}
+
+	@Override
+	public void swapBuffers() {
+		// Try to acquire swap permit and wait for 100 nanoseconds before giving up.
+		try {
+			if(!this.swapSem.tryAcquire(100, TimeUnit.NANOSECONDS)) return;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// Swap buffers.
+		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].swapBuffer();
+		for(final IMD5Node child : this.dependents) child.swapBuffers();
+		// Release update permit.
+		this.updateSem.release();
 	}
 
 	@Override

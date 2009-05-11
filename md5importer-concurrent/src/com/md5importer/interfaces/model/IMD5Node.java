@@ -12,7 +12,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-17-2008 22:27 EST
- * @version Modified date: 03-25-2009 18:06 EST
+ * @version Modified date: 05-10-2009 21:12 EST
  */
 public interface IMD5Node extends Savable {
 
@@ -21,6 +21,31 @@ public interface IMD5Node extends Savable {
 	 */
 	public void initialize();
 	
+	/**
+	 * Signal all the meshes to update based on skeleton including
+	 * meshes maintained by dependent children.
+	 * <p>
+	 * For performance and scalability issues, this method should
+	 * be invoked outside the rendering thread.
+	 * <p>
+	 * This method is internally invoked by the node controller
+	 * unit. User should not need to directly invoke this method.
+	 */
+	public void updateMeshes();
+
+	/**
+	 * Swap vertex information buffers of all meshes and dependent
+	 * children.
+	 * <p>
+	 * In order for the updated meshes to be rendered properly, this
+	 * method should be invoked within the rendering thread in a single
+	 * rendering cycle.
+	 * <p>
+	 * This method should be invoked by the user application. There is
+	 * no internal invocation.
+	 */
+	public void swapBuffers();
+
 	/**
 	 * Attach the given MD5 node to the joint with given ID.
 	 * @param node The <code>IMD5Node</code> needs to be attached.
