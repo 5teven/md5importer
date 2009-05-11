@@ -294,7 +294,7 @@ public class Mesh extends TriMesh implements IMesh {
 	 */
 	private void loadSetMap(String map, TextureState state, float maxU, float maxV, int unit) {
 		if(Mesh.extension != null && Mesh.extension.length() > 0) state.setTexture(this.loadTexture(this.buildPath(map), maxU, maxV), unit);
-		else state.setTexture(this.loadTexture(map, maxU, maxV));
+		else state.setTexture(this.loadTexture(map, maxU, maxV), unit);
 	}
 
 	/**
