@@ -29,7 +29,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 05-10-2009 23:16 EST
+ * @version Modified date: 05-28-2009 18:16 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -106,11 +106,11 @@ public class MD5Node extends Node implements IMD5Node {
 
 	@Override
 	public void updateMeshes() {
-		// Try to acquire update permit and wait for 100 nanoseconds before giving up.
+		// Try to acquire update permit and wait for render to catch up if necessary.
 		try {
-			if(!this.updateSem.tryAcquire(100, TimeUnit.NANOSECONDS)) return;
+			this.updateSem.acquire();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			throw new RuntimeException("Acquiring update permit interrupted.");
 		}
 		// Update mesh geometric information.
 		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].updateMesh();
@@ -122,11 +122,11 @@ public class MD5Node extends Node implements IMD5Node {
 
 	@Override
 	public void swapBuffers() {
-		// Try to acquire swap permit and wait for 100 nanoseconds before giving up.
+		// Try to acquire swap permit and wait for 1 microsecond before giving up.
 		try {
-			if(!this.swapSem.tryAcquire(100, TimeUnit.NANOSECONDS)) return;
+			if(!this.swapSem.tryAcquire(1, TimeUnit.MICROSECONDS)) return;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			throw new RuntimeException("Acquiring buffer swap permit interrupted.");
 		}
 		// Swap buffers.
 		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].swapBuffer();
