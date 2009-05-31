@@ -29,7 +29,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 05-28-2009 18:16 EST
+ * @version Modified date: 05-30-2009 14:21 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -117,7 +117,7 @@ public class MD5Node extends Node implements IMD5Node {
 		// Update dependent children.
 		for(final IMD5Node child : this.dependents) child.updateMeshes();
 		// Release swap permit.
-		this.swapSem.release();
+		if(this.swapSem.availablePermits() <= 0) this.swapSem.release();
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class MD5Node extends Node implements IMD5Node {
 		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].swapBuffer();
 		for(final IMD5Node child : this.dependents) child.swapBuffers();
 		// Release update permit.
-		this.updateSem.release();
+		if(this.updateSem.availablePermits() <= 0) this.updateSem.release();
 	}
 
 	@Override
