@@ -47,7 +47,7 @@ public class MD5Node extends Node implements IMD5Node {
 	/**
 	 * The flag indicates if model node shares skeleton with its parent.
 	 */
-	private boolean dependent;
+	private volatile boolean dependent;
 	/**
 	 * The array of <code>IJoint</code> skeleton.
 	 */
@@ -111,32 +111,40 @@ public class MD5Node extends Node implements IMD5Node {
 	@Override
 	public void updateMeshes() {
 		// Try to acquire update permit and wait for render to catch up if necessary.
-		try {
-			this.updateSem.acquire();
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Acquiring update permit interrupted.");
+		if(!this.dependent) {
+			try {
+				this.updateSem.acquire();
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Acquiring update permit interrupted.");
+			}
 		}
 		// Update mesh geometric information.
 		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].updateMesh();
 		// Update dependent children.
 		for(final IMD5Node child : this.dependents) child.updateMeshes();
 		// Release swap permit.
-		if(this.swapSem.availablePermits() <= 0) this.swapSem.release();
+		if(!this.dependent) {
+			if(this.swapSem.availablePermits() <= 0) this.swapSem.release();
+		}
 	}
 
 	@Override
 	public void swapBuffers() {
 		// Try to acquire swap permit and wait for 1 microsecond before giving up.
-		try {
-			if(!this.swapSem.tryAcquire(1, TimeUnit.MICROSECONDS)) return;
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Acquiring buffer swap permit interrupted.");
+		if(!this.dependent) {
+			try {
+				if(!this.swapSem.tryAcquire(1, TimeUnit.MICROSECONDS)) return;
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Acquiring buffer swap permit interrupted.");
+			}
 		}
 		// Swap buffers.
 		for(int i = 0; i < this.meshes.length; i++) this.meshes[i].swapBuffer();
 		for(final IMD5Node child : this.dependents) child.swapBuffers();
 		// Release update permit.
-		if(this.updateSem.availablePermits() <= 0) this.updateSem.release();
+		if(!this.dependent) {
+			if(this.updateSem.availablePermits() <= 0) this.updateSem.release();
+		}
 	}
 
 	@Override
@@ -195,6 +203,8 @@ public class MD5Node extends Node implements IMD5Node {
 			for(IMesh mesh : this.meshes) {
 				mesh.setJoints(this.joints);
 			}
+			this.updateSem.drainPermits();
+			this.swapSem.drainPermits();
 		} else {
 			for(int i = 0; i < this.joints.length; i++) {
 				IJoint clone = this.joints[i].clone();
@@ -203,6 +213,8 @@ public class MD5Node extends Node implements IMD5Node {
 			for(IMesh mesh : this.meshes) {
 				mesh.setJoints(this.joints);
 			}
+			this.updateSem.release();
+			this.swapSem.drainPermits();
 		}
 	}
 
