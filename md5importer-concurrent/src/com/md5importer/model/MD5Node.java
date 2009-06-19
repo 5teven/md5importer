@@ -29,7 +29,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 05-30-2009 14:21 EST
+ * @version Modified date: 06-18-2009 17:02 EST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -66,8 +66,8 @@ public class MD5Node extends Node implements IMD5Node {
 	 */
 	public MD5Node() {
 		super();
-		this.updateSem = new Semaphore(0);
-		this.swapSem = new Semaphore(1);
+		this.updateSem = new Semaphore(1);
+		this.swapSem = new Semaphore(0);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -79,8 +79,8 @@ public class MD5Node extends Node implements IMD5Node {
 		super(name);
 		this.joints = joints;
 		this.meshes = meshes;
-		this.updateSem = new Semaphore(0);
-		this.swapSem = new Semaphore(1);
+		this.updateSem = new Semaphore(1);
+		this.swapSem = new Semaphore(0);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -100,8 +100,8 @@ public class MD5Node extends Node implements IMD5Node {
 			this.meshes[i].initialize(this.name);
 			this.attachChild((Spatial)this.meshes[i]);
 		}
-		this.swapBuffers();
 		this.updateMeshes();
+		this.swapBuffers();
 	}
 
 	@Override
