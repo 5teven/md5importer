@@ -66,8 +66,8 @@ public class MD5Node extends Node implements IMD5Node {
 	 */
 	public MD5Node() {
 		super();
-		this.updateSem = new Semaphore(1);
-		this.swapSem = new Semaphore(0);
+		this.updateSem = new Semaphore(0);
+		this.swapSem = new Semaphore(1);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -79,8 +79,8 @@ public class MD5Node extends Node implements IMD5Node {
 		super(name);
 		this.joints = joints;
 		this.meshes = meshes;
-		this.updateSem = new Semaphore(1);
-		this.swapSem = new Semaphore(0);
+		this.updateSem = new Semaphore(0);
+		this.swapSem = new Semaphore(1);
 		this.dependents = new CopyOnWriteArrayList<IMD5Node>();
 	}
 
@@ -100,8 +100,12 @@ public class MD5Node extends Node implements IMD5Node {
 			this.meshes[i].initialize(this.name);
 			this.attachChild((Spatial)this.meshes[i]);
 		}
-		this.updateMeshes();
+		// Populate both back and front buffers with bind pose data.
 		this.swapBuffers();
+		this.updateMeshes();
+		// Ensure update ready.
+		this.swapSem.drainPermits();
+		if(this.updateSem.availablePermits() <= 0) this.updateSem.release();
 	}
 
 	@Override
