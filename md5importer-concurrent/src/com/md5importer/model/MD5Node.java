@@ -29,7 +29,7 @@ import com.md5importer.interfaces.model.mesh.IMesh;
  * initialized and ready to be used.
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 06-18-2009 17:02 EST
+ * @version Modified date: 06-21-2009 19:19 PST
  */
 public class MD5Node extends Node implements IMD5Node {
 	/**
@@ -110,10 +110,13 @@ public class MD5Node extends Node implements IMD5Node {
 
 	@Override
 	public void updateMeshes() {
-		// Try to acquire update permit and wait for render to catch up if necessary.
+		// Try to acquire update permit and wait for 1 millisecond before giving up.
+		// Cannot unconditionally acquire since if the render thread is invoking
+		// any operations that affect the thread invoking update meshes, an out-of-
+		// order locking can occur causing deadlock.
 		if(!this.dependent) {
 			try {
-				this.updateSem.acquire();
+				if(!this.updateSem.tryAcquire(1, TimeUnit.MILLISECONDS)) return;
 			} catch (InterruptedException e) {
 				throw new RuntimeException("Acquiring update permit interrupted.");
 			}
