@@ -49,7 +49,7 @@ import com.md5importer.interfaces.model.mesh.primitive.IWeight;
  * This class is used internally by <code>MD5Importer</code> only.
  * 
  * @author Yi Wang (Neakor)
- * @version Modified date: 05-11-2009 18:29 EST
+ * @version Modified date: 06-25-2009 20:05 PST
  */
 public class Mesh extends TriMesh implements IMesh {
 	/**
@@ -269,7 +269,6 @@ public class Mesh extends TriMesh implements IMesh {
 			index++;
 		}
 		this.setTextureCoords(new TexCoords(textureBuffer));
-
 		// Get texture state.
 		TextureState state = (TextureState)this.getRenderState(StateType.Texture);
 		if(state == null) {
@@ -321,6 +320,7 @@ public class Mesh extends TriMesh implements IMesh {
 		}
 		// Load URL.
 		URL url = ResourceLocatorTool.locateResource(ResourceLocatorTool.TYPE_TEXTURE, file);
+		if(url == null) return null;
 		// Load the texture and set the wrap mode.
 		Texture map = TextureManager.loadTexture(url, this.miniFilter, this.magFilter, this.anisotropic, true);
 		if(map != null) {
