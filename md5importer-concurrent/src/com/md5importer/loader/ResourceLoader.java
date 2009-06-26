@@ -2,6 +2,7 @@ package com.md5importer.loader;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.net.URL;
 
@@ -14,7 +15,7 @@ import com.jme.math.Vector3f;
  *
  * @author Yi Wang (Neakor)
  * @version Creation date: 11-18-2008 12:29 EST
- * @version Modified date: 02-19-2009 22:41 EST
+ * @version Modified date: 06-26-2009 14:02 PST
  */
 public abstract class ResourceLoader<T> {
 	/**
@@ -43,8 +44,12 @@ public abstract class ResourceLoader<T> {
 	 * @throws IOException If reading is interrupted.
 	 */
 	public T load(URL url, String name) throws IOException {
-		this.setupReader(url);
-		return this.load(name);
+		final Reader reader = this.setupReader(url);
+		try {
+			return this.load(name);
+		} finally {
+			reader.close();
+		}
 	}
 	
 	/**
@@ -58,9 +63,10 @@ public abstract class ResourceLoader<T> {
 	/**
 	 * Setup the reader for reading.
 	 * @param url The <code>URL</code> of the file.
+	 * @return The <code>Reader</code> instance.
 	 * @throws IOException If reading is interrupted.
 	 */
-	private void setupReader(URL url) throws IOException {
+	private Reader setupReader(URL url) throws IOException {
 		InputStreamReader streamReader = new InputStreamReader(url.openStream());
 		this.reader = new StreamTokenizer(streamReader);
 		this.reader.quoteChar('"');
@@ -71,6 +77,7 @@ public abstract class ResourceLoader<T> {
 		this.reader.parseNumbers();
 		this.reader.slashSlashComments(true);
 		this.reader.eolIsSignificant(true);
+		return streamReader;
 	}
 
 	/**

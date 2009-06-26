@@ -3,6 +3,7 @@ package com.model.md5.importer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.net.URL;
 import java.util.logging.Logger;
@@ -30,7 +31,7 @@ import com.model.md5.importer.resource.MeshImporter;
  * {@link}http://www.modwiki.net/wiki/MD5_(file_format).
  *
  * @author Yi Wang (Neakor)
- * @version Modified date: 06-09-2008 19:53 EST
+ * @version Modified date: 06-26-2009 14:06 EST
  */
 public class MD5Importer {
 	/**
@@ -115,9 +116,13 @@ public class MD5Importer {
 	 * @throws IOException Thrown when errors occurred during file reading.
 	 */
 	public void loadMesh(URL md5mesh, String name) throws IOException {
-		this.setupReader(md5mesh.openStream());
-		MeshImporter meshImporter = new MeshImporter(this.reader);
-		this.modelNode = meshImporter.loadMesh(name);
+		final Reader reader = this.setupReader(md5mesh.openStream());
+		try {
+			MeshImporter meshImporter = new MeshImporter(this.reader);
+			this.modelNode = meshImporter.loadMesh(name);
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
@@ -127,16 +132,21 @@ public class MD5Importer {
 	 * @throws IOException Thrown when errors occurred during file reading.
 	 */
 	public void loadAnim(URL md5anim, String name) throws IOException {
-		this.setupReader(md5anim.openStream());
-		AnimImporter animImporter = new AnimImporter(this.reader);
-		this.animation = animImporter.loadAnim(name);
+		final Reader reader = this.setupReader(md5anim.openStream());
+		try {
+			AnimImporter animImporter = new AnimImporter(this.reader);
+			this.animation = animImporter.loadAnim(name);
+		} finally {
+			reader.close();
+		}
 	}
 
 	/**
 	 * Setup the <code>StreamTokenizer</code> for file reading.
 	 * @param stream The <code>InputStream</code> of the file.
+	 * @return The <code>Reader</code> instance.
 	 */
-	private void setupReader(InputStream stream) {
+	private Reader setupReader(InputStream stream) {
 		InputStreamReader streamReader = new InputStreamReader(stream);
 		this.reader = new StreamTokenizer(streamReader);
 		this.reader.quoteChar('"');
@@ -147,6 +157,7 @@ public class MD5Importer {
 		this.reader.parseNumbers();
 		this.reader.slashSlashComments(true);
 		this.reader.eolIsSignificant(true);
+		return streamReader;
 	}
 
 	/**
