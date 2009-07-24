@@ -248,4 +248,9 @@ public class Joint implements Serializable, IJoint {
 	public IJoint clone() {
 		return new Joint(this.index, new String(this.name), this.translation.clone(), this.orientation.clone(), this.transform.clone());
 	}
+	
+	@Override
+	public String toString() {
+		return this.name;
+	}
 }
